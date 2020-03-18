@@ -3,6 +3,7 @@ package client.GUI;
 import javafx.animation.FillTransition;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
 import javafx.util.Duration;
@@ -13,14 +14,21 @@ public class Tile extends StackPane
 {
     private int x;
     private int y;
+    private boolean isSteinTile;
+    private boolean isKante;
 
 
-
-    private Rectangle border = new Rectangle(20, 20);
+    private Circle border = new Circle(15);
     private Text text = new Text();
+    private Text stein = new Text();
     private ClientModel callback;
 
     // Setter / Getter
+
+
+    public boolean isSteinTile() {
+        return isSteinTile;
+    }
 
     public Text getText() {
         return text;
@@ -46,14 +54,6 @@ public class Tile extends StackPane
         this.y = y;
     }
 
-    public Rectangle getRecBorder() {
-        return border;
-    }
-
-    public void setRecBorder(Rectangle border) {
-        this.border = border;
-    }
-
     public ClientModel getCallback() {
         return callback;
     }
@@ -67,10 +67,52 @@ public class Tile extends StackPane
     public Tile ( int x, int y ) {
         this.x = x;
         this.y = y;
-        border.setStroke(Color.DARKGRAY);
+        this.isSteinTile = false;
+        this.isKante = false;
 
-        getChildren().addAll(border, text);
+        border.setStroke(Color.TRANSPARENT);
+        border.setFill(Color.TRANSPARENT);
+        if ( (this.x == 0 || this.x == 3 || this.x == 6) && (this.y == 0 || this.y == 6) ) {
+            this.isKante = true;
+        }
+        if ( (this.x == 1 || this.x == 3 || this.x == 5) && (this.y == 1 || this.y == 5 )) {
+            this.isKante = true;
+        }
+        if ( (this.x == 2 || this.x == 3 || this.x == 4) && (this.y == 2 || this.y == 4)) {
+            this.isKante = true;
+        }
+        if ( (this.x == 0 || this.x == 1 || this.x == 2 || this.x == 4 || this.x == 5 || this.x == 6) && this.y == 3) {
+            this.isKante = true;
+        }
+        getChildren().addAll(border, text, stein);
     }
+
+    public void setSteinTile( boolean isSteinTile, boolean own ) {
+        this.isSteinTile = isSteinTile;
+        if ( isSteinTile ) {
+            if ( own ) {
+                this.border.setFill(Color.WHITE);
+            }
+            else {
+                this.border.setFill(Color.BLACK);
+            }
+            this.border.setStroke(Color.LIGHTGRAY);
+        }
+    }
+
+    public void setReadyToSet() {
+        if ( this.isKante && !this.isSteinTile) {
+            border.setFill(Color.color((18.0/255), 1, 0, 0.5));
+        }
+    }
+
+    public void unsetReadyToSet() {
+        if ( this.isKante && !this.isSteinTile ) {
+            border.setFill(Color.TRANSPARENT);
+        }
+    }
+
+
 
 
 }

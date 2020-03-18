@@ -46,6 +46,7 @@ public class SlaveWorker implements Runnable {
             out.println(MessageProtocol.ENMSET);
         }
         else {
+            System.out.println("Sende ENMUNSET");
             out.println(MessageProtocol.ENMUNSET);
         }
     }
@@ -63,9 +64,9 @@ public class SlaveWorker implements Runnable {
     private void shutdown() {
         try {
             this.listening = false;
-            this.in.close();
-            this.out.close();
             this.callback.remove(this);
+            this.out.close();
+            this.in.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -135,7 +136,7 @@ public class SlaveWorker implements Runnable {
             }
         } catch (IOException e) {
             // shutdown?
-            this.shutdown();
+            //this.shutdown();
         }
     }
 }

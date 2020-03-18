@@ -39,6 +39,7 @@ public class Server {
         userMatchedList.remove(worker.getName());
 
         // set enm to nothing
+        System.out.println("Worker: " + worker.getName() + "; Anderer: " + enm.getName());
         enm.setEnm(null);
         userMatchedList.remove(enm.getName());
         userMatchedList.put(enm.getName(), false);
@@ -92,7 +93,6 @@ public class Server {
             name = key.nextElement();
             if ( !name.equals(toMatch.getName()) ) {
                 if ( !this.userMatchedList.get(name) ) {
-                    // take this slaveworker
                     sw = this.userList.get(name);
                     toMatch.setEnm(sw);
                     sw.setEnm(toMatch);

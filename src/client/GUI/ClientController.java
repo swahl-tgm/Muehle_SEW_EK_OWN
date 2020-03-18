@@ -40,10 +40,17 @@ public class ClientController implements Initializable, EventHandler {
     private GridPane root;
     @FXML
     private GridPane eigFig;
+    private SteinTile[] eigFigClick;
     @FXML
     private GridPane mainField;
+    private Tile[][] mainFieldClick;
     @FXML
     private GridPane enmFig;
+    private SteinTile[] enmFigClick;
+
+    // Eig Fig clicked
+    private boolean figClicked;
+    private SteinTile markedOne;
 
     private StackPane eigTextBase;
     private Text eigText;
@@ -58,14 +65,14 @@ public class ClientController implements Initializable, EventHandler {
     private Label commandLine;
     private CommandCounter counter;
     private Thread counterThread;
-    private Button readyBut;
+
     private boolean enmFound;
-    private boolean started;
-    private boolean startedEnm;
+    private boolean eigZugFinished;
+    private boolean enmZugFinished;
+    private boolean placingFinished;
 
     // Callback
     private Client c;
-
 
     /**
      * Setzt einen Text in die Commandline
@@ -152,7 +159,6 @@ public class ClientController implements Initializable, EventHandler {
      */
     public void setLose() {
         // damit keine züge mehr möglich sind
-        this.started = false;
         this.enmFound = false;
 
 
@@ -165,7 +171,6 @@ public class ClientController implements Initializable, EventHandler {
      */
     private void setWin() {
         // damit keine züge mehr möglich sind
-        this.started = false;
         this.enmFound = false;
 
 
@@ -174,6 +179,82 @@ public class ClientController implements Initializable, EventHandler {
         this.c.send(MessageProtocol.LOSE);
     }
 
+    private void setMainUnset() {
+        for ( int i = 0; i < this.mainFieldClick.length; i++ ) {
+            for ( int j = 0; j < this.mainFieldClick[i].length; j++ ) {
+                this.mainFieldClick[i][j].unsetReadyToSet();
+            }
+        }
+    }
+
+    private void setMainSet() {
+        for ( int i = 0; i < this.mainFieldClick.length; i++ ) {
+            for ( int j = 0; j < this.mainFieldClick[i].length; j++ ) {
+                this.mainFieldClick[i][j].setReadyToSet();
+            }
+        }
+    }
+    public void setSteinClicked( SteinTile clickedTile ) {
+        if ( enmZugFinished ) {
+            if ( !clickedTile.isSet() ) {
+                if ( clickedTile.isActivated() ) {
+                    clickedTile.deactivate();
+                    this.markedOne = null;
+                    this.figClicked = false;
+
+                    this.setMainUnset();
+                }
+                else {
+                    if ( figClicked ) {
+                        for (SteinTile steinTile : this.eigFigClick) {
+                            steinTile.deactivate();
+                        }
+                    }
+                    clickedTile.activate();
+                    this.markedOne = clickedTile;
+                    this.figClicked = true;
+
+                    this.setMainSet();
+                }
+            }
+        }
+
+    }
+
+    private void setFieldClicked( Tile currentTile) {
+        if ( this.figClicked ) {
+            if ( !currentTile.isSteinTile() ) {
+                this.markedOne.setSet();
+                this.markedOne = null;
+                this.figClicked = false;
+
+                currentTile.setSteinTile(true, true);
+
+                this.setMainUnset();
+            }
+        }
+    }
+
+    public void setEnmStein( int x, int y ){
+        this.mainFieldClick[x][y].setSteinTile(true, false);
+    }
+
+
+    /**
+     * Setzt ob der Gegner oder der eigene Spieler dran ist
+     * @param to wird auf true oder false gesetzt (true: gegner ist dran, false: du bist dran)
+     */
+    public void setAlreadyPlaced( boolean to ) {
+        if (to) {
+            this.setCommandLineText("Your enemies turn");
+        } else {
+            this.setCommandLineText("Your turn");
+        }
+
+        this.model.setAlreadyPlaced(to);
+    }
+
+
 
 
     /**
@@ -181,6 +262,37 @@ public class ClientController implements Initializable, EventHandler {
      */
     private void createView() {
 
+        mainFieldClick = model.createFieldContent(mainField);
+        eigFigClick = model.createEigFigContent(eigFig);
+        enmFigClick = model.createEnmFigContent(enmFig);
+
+        for (int i = 0; i < this.mainFieldClick.length; i++ ) {
+            for ( int j = 0; j < this.mainFieldClick[i].length; j++ ) {
+                this.mainFieldClick[i][j].setOnMouseClicked(new EventHandler<MouseEvent>() {
+                    @Override
+                    public void handle(MouseEvent mouseEvent) {
+                        Tile currentTile = (Tile)mouseEvent.getSource();
+
+                        if ( enmFound ) {
+                            setFieldClicked( currentTile);
+                        }
+                    }
+                });
+            }
+        }
+
+        for ( int i = 0; i < this.eigFigClick.length; i++ ) {
+            this.eigFigClick[i].setOnMouseClicked(new EventHandler<MouseEvent>() {
+                @Override
+                public void handle(MouseEvent mouseEvent) {
+                    SteinTile currentTile = (SteinTile)mouseEvent.getSource();
+
+                    if ( enmFound ) {
+                        setSteinClicked( currentTile );
+                    }
+                }
+            });
+        }
     }
 
 
@@ -206,6 +318,15 @@ public class ClientController implements Initializable, EventHandler {
         counterThread = new Thread(counter);
         counterThread.setDaemon(true);
         counterThread.start();
+
+
+        figClicked = false;
+        this.enmFound = false;
+        this.placingFinished = false;
+        this.enmZugFinished = false;
+        this.eigZugFinished = false;
+
+        this.createView();
     }
 
 
@@ -241,7 +362,6 @@ public class ClientController implements Initializable, EventHandler {
         counterThread = new Thread(counter);
         counterThread.setDaemon(true);
         counterThread.start();
-
 
         this.enmText = new Text("Gegner Spielfeld");
         enmTextBase = new StackPane();

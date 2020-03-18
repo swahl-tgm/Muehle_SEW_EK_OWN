@@ -14,7 +14,7 @@ public class ClientStart extends Application {
      */
     @Override
     public void start(Stage stage) throws Exception {
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("GUI/client.fxml")); //("GUI/Start/start.fxml"));
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("GUI/Start/start.fxml")); //("GUI/Start/start.fxml"));
         Parent root = loader.load();
         Scene scene = new Scene(root);
         stage.setScene(scene);

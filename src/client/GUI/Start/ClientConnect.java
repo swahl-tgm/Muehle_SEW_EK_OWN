@@ -86,6 +86,7 @@ public class ClientConnect implements Initializable {
                 stage.setScene(scene);
             }
             catch (Exception ex) {
+                ex.printStackTrace();
                 commandline.setText("Kein Server konnte gefunden werden!");
             }
 

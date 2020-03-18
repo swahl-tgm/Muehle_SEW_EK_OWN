@@ -40,7 +40,7 @@ public class Client implements Runnable {
      */
     public void setName(String name ) {
         this.name = name;
-        this.c.setName(name);
+        //this.c.setName(name);
     }
 
     /**
@@ -48,15 +48,11 @@ public class Client implements Runnable {
      */
     public void shutdown() {
         if ( listening ) {
-            try {
-                listening = false;
-                out.println(MessageProtocol.EXIT);
-                in.close();
-                out.close();
+            listening = false;
+            out.println(MessageProtocol.EXIT);
+            //in.close();
+            //out.close();
 
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
         }
     }
 
@@ -85,6 +81,7 @@ public class Client implements Runnable {
                 if ( ind == -1 ) {
                     ind = msg.length();
                 }
+                System.out.println("AhA: " + msg);
                 String command = msg.substring(0, ind);
                 System.out.println("Command client: " + command);
                 switch (command) {
