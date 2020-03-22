@@ -134,7 +134,7 @@ public class ClientController implements Initializable, EventHandler {
      */
     public void setEnmName(String name ) {
         this.enmName = name;
-        this.enmText.setText(name + "'s Spielfeld");
+        //this.enmText.setText(name + "'s Spielfeld");
     }
 
     /**
@@ -143,7 +143,7 @@ public class ClientController implements Initializable, EventHandler {
      */
     public void setName ( String name ) {
         this.name = name;
-        this.eigText.setText(name + "'s Spielfeld");
+        //this.eigText.setText(name + "'s Spielfeld");
     }
 
     /**
@@ -355,24 +355,13 @@ public class ClientController implements Initializable, EventHandler {
      */
     public void startCommandCounterAgain() {
         System.out.println("Starting again");
+        this.commandLineCapsule.start();
         this.counter.startAgain();
 
-        this.commandLineCapsule.start();
         this.counter = new CommandCounter(commandLineCapsule);
         counterThread = new Thread(counter);
         counterThread.setDaemon(true);
         counterThread.start();
-
-        this.enmText = new Text("Gegner Spielfeld");
-        enmTextBase = new StackPane();
-        enmTextBase.getChildren().add(enmText);
-
-        this.eigText = new Text("Eigenes Spielfeld");
-        eigTextBase = new StackPane();
-        eigTextBase.getChildren().add(eigText);
-
-        this.root.add(eigTextBase, 0,0);
-        this.root.add(enmTextBase, 1,0);
     }
 
     @Override
