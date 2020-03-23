@@ -74,13 +74,6 @@ public class SlaveWorker implements Runnable {
     }
 
     /**
-     * Sendet ein {@link MessageProtocol#READY} an den Client
-     */
-    private void sendReady() {
-        this.out.println(MessageProtocol.READY);
-    }
-
-    /**
      * Sendet eine Nachricht an den Client
      * @param msg Nachricht
      */
@@ -109,23 +102,26 @@ public class SlaveWorker implements Runnable {
                     String command = msg.substring(0, ind);
                     System.out.println("Command: " + command);
                     switch (command) {
-                        case MessageProtocol.FIRST:
-                            this.enm.send(msg);
-                            break;
-                        case MessageProtocol.HIT:
-                            this.enm.send(msg);
-                            break;
-                        case MessageProtocol.READY:
-                            this.enm.sendReady();
-                            break;
                         case MessageProtocol.EXIT:
                             this.shutdown();
                             break;
-                        case MessageProtocol.SHIP:
+                        case MessageProtocol.REMOVE:
                             this.enm.send(msg);
+                            break;
+                        case MessageProtocol.SETUSED:
+                            this.enm.send(msg);
+                            break;
+                        case MessageProtocol.PLACED:
+                            this.enm.send(msg);
+                            break;
+                        case MessageProtocol.SETTOBLACK:
+                            // auf schwarz setzen
+                            this.send(MessageProtocol.SETTOBLACK);
                             break;
                         case MessageProtocol.NAMES:
                             this.enm.send(msg);
+                            this.enm.send(MessageProtocol.SETTOBLACK);
+                            this.send(MessageProtocol.SETTOWHITE);
                             break;
                         case MessageProtocol.LOSE:
                             this.enm.send(msg);

@@ -97,6 +97,13 @@ public class SteinTile extends StackPane
         getChildren().addAll(border, stein);
     }
 
+    public void setBlack() {
+        stein.setFill(Color.BLACK);
+    }
+
+    public void setWhite() {
+        stein.setFill(Color.WHITE);
+    }
     public void activate() {
         if ( !this.isSet ) {
             this.isActivated = true;

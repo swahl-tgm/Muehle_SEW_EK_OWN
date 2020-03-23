@@ -51,6 +51,8 @@ public class ClientController implements Initializable, EventHandler {
     // Eig Fig clicked
     private boolean figClicked;
     private SteinTile markedOne;
+    private Tile moveTile;
+    private boolean toRemove;
 
     private StackPane eigTextBase;
     private Text eigText;
@@ -66,13 +68,14 @@ public class ClientController implements Initializable, EventHandler {
     private CommandCounter counter;
     private Thread counterThread;
 
-    private boolean enmFound;
-    private boolean eigZugFinished;
-    private boolean enmZugFinished;
-    private boolean placingFinished;
+
 
     // Callback
     private Client c;
+
+    public void sendEnm( String msg ) {
+        c.send(msg);
+    }
 
     /**
      * Setzt einen Text in die Commandline
@@ -88,6 +91,40 @@ public class ClientController implements Initializable, EventHandler {
     }
 
 
+    public void setToBlack() {
+        if ( !this.model.isColorSet() ) {
+            this.model.setWhite(false);
+            this.model.setColorSet(true);
+            this.model.setEnmZugFinished(false);
+            this.model.setEigZugFinished(true);
+
+            for ( SteinTile tile: this.eigFigClick ) {
+                tile.setBlack();
+            }
+            for ( SteinTile tile: this.enmFigClick ) {
+                tile.setWhite();
+            }
+
+            this.setWhitsTurn();
+        }
+    }
+
+    public void setToWhite() {
+        if ( !this.model.isColorSet() ) {
+            this.model.setWhite(true);
+            this.model.setColorSet(true);
+            this.model.setEnmZugFinished(true);
+            this.model.setEigZugFinished(false);
+
+            for ( SteinTile tile: this.eigFigClick ) {
+                tile.setWhite();
+            }
+            for ( SteinTile tile: this.enmFigClick ) {
+                tile.setBlack();
+            }
+            this.setWhitsTurn();
+        }
+    }
 
 
     /**
@@ -115,7 +152,8 @@ public class ClientController implements Initializable, EventHandler {
      * Setzt das der Gegner disconnected ist, spiel wird zurückgesetzt
      */
     public void enmDisconnected() {
-        this.enmFound = false;
+        this.model.setEnmFound(false);
+        this.reset();
         // start counter
         this.startCommandCounterAgain();
     }
@@ -124,8 +162,24 @@ public class ClientController implements Initializable, EventHandler {
      * Setzt das ein Gegner gefunden wurde, spiel kann beginnen
      */
     public void foundEnm() {
-        this.enmFound = true;
+        this.model.setEnmFound(true);
         this.closeCommandCounter();
+    }
+
+    private void setWhitsTurn() {
+        String temp = "(Du)";
+        if ( !this.model.isWhite() ) {
+            temp = "(Gegner)";
+        }
+        this.commandLineCapsule.setText("Weiß ist am Zug " + temp, true);
+    }
+
+    private void setBlacksTurn() {
+        String temp = "(Du)";
+        if ( this.model.isWhite() ) {
+            temp = "(Gegner)";
+        }
+        this.commandLineCapsule.setText("Schwarz ist am Zug " + temp, true);
     }
 
     /**
@@ -134,7 +188,7 @@ public class ClientController implements Initializable, EventHandler {
      */
     public void setEnmName(String name ) {
         this.enmName = name;
-        //this.enmText.setText(name + "'s Spielfeld");
+        this.model.setEnmText(name);
     }
 
     /**
@@ -143,7 +197,6 @@ public class ClientController implements Initializable, EventHandler {
      */
     public void setName ( String name ) {
         this.name = name;
-        //this.eigText.setText(name + "'s Spielfeld");
     }
 
     /**
@@ -159,8 +212,7 @@ public class ClientController implements Initializable, EventHandler {
      */
     public void setLose() {
         // damit keine züge mehr möglich sind
-        this.enmFound = false;
-
+        this.model.setEnmFound(false);
 
         this.commandLineCapsule.setText("Du hast verloren! " + this.enmName + " hat gewonnen! Vielleich nächstes Mal :)", true);
     }
@@ -171,8 +223,7 @@ public class ClientController implements Initializable, EventHandler {
      */
     private void setWin() {
         // damit keine züge mehr möglich sind
-        this.enmFound = false;
-
+        this.model.setEnmFound(false);
 
         this.commandLineCapsule.setText(this.name + " hast gewonnen!!!", true);
 
@@ -194,8 +245,9 @@ public class ClientController implements Initializable, EventHandler {
             }
         }
     }
-    public void setSteinClicked( SteinTile clickedTile ) {
-        if ( enmZugFinished ) {
+
+    private void setSteinClicked( SteinTile clickedTile ) {
+        if ( this.model.isEnmZugFinished() ) {
             if ( !clickedTile.isSet() ) {
                 if ( clickedTile.isActivated() ) {
                     clickedTile.deactivate();
@@ -222,39 +274,145 @@ public class ClientController implements Initializable, EventHandler {
     }
 
     private void setFieldClicked( Tile currentTile) {
-        if ( this.figClicked ) {
-            if ( !currentTile.isSteinTile() ) {
+        if ( this.toRemove ) {
+            if ( currentTile.isSteinTile() && !currentTile.isUsed() && currentTile.isWhite() != this.model.isWhite() ) {
+                currentTile.setNormal();
+
+                this.c.send(MessageProtocol.REMOVE + " x:"+currentTile.getX() + ",y:" + currentTile.getY());
+
+                if ( this.model.isWhite() ) {
+                    this.setBlacksTurn();
+                }
+                else {
+                    this.setWhitsTurn();
+                }
+                this.model.setEigZugFinished(true);
+                this.model.setEnmZugFinished(false);
+                toRemove = false;
+                // make normal
+                for ( Tile[] tiles : this.mainFieldClick ) {
+                    for ( Tile tile : tiles ) {
+                        tile.setUntouched();
+                    }
+                }
+            }
+        }
+        else if ( this.figClicked ) {
+            if ( !currentTile.isSteinTile() && currentTile.isKante() ) {
+
                 this.markedOne.setSet();
                 this.markedOne = null;
                 this.figClicked = false;
 
-                currentTile.setSteinTile(true, true);
+                currentTile.setSteinTile(true, this.model.isWhite());
+                System.out.println("This: x: " + currentTile.getX() + ", y: " + currentTile.getY());
+                this.c.send(MessageProtocol.PLACED + " x:"+ currentTile.getX() + ", y:"+currentTile.getY());
 
+                // add placed stones
+                this.model.stonePlaced();
+                // back to normal
+                this.markedOne = null;
+                this.figClicked = false;
+                if ( this.model.isWhite() ) {
+                    this.setBlacksTurn();
+                }
+                else {
+                    this.setWhitsTurn();
+                }
                 this.setMainUnset();
+
+
+                if ( this.model.checkForMuehle( this.mainFieldClick ) ) {
+                    this.showRemove();
+                    this.toRemove = true;
+
+                    this.model.setEigZugFinished(false);
+                    this.model.setEnmZugFinished(true);
+                    this.commandLineCapsule.setText("Mühle! Entferne einen freien Stein des gegners!", true);
+                }
+                else {
+                    this.model.setEigZugFinished(true);
+                    this.model.setEnmZugFinished(false);
+                }
             }
         }
     }
 
-    public void setEnmStein( int x, int y ){
-        this.mainFieldClick[x][y].setSteinTile(true, false);
-    }
-
-
-    /**
-     * Setzt ob der Gegner oder der eigene Spieler dran ist
-     * @param to wird auf true oder false gesetzt (true: gegner ist dran, false: du bist dran)
-     */
-    public void setAlreadyPlaced( boolean to ) {
-        if (to) {
-            this.setCommandLineText("Your enemies turn");
-        } else {
-            this.setCommandLineText("Your turn");
+    private void showRemove() {
+        for ( Tile[] tiles : this.mainFieldClick ) {
+            for ( Tile tile: tiles ) {
+                if ( tile.isWhite() == !this.model.isWhite() && !tile.isUsed()) {
+                    tile.setRemovable();
+                }
+            }
         }
+    }
 
-        this.model.setAlreadyPlaced(to);
+    private void setMoveStein( Tile currentTile ) {
+        if ( this.model.isEnmZugFinished() ) {
+            this.moveTile = currentTile;
+            this.moveTile.setMoveable();
+        }
+    }
+
+    private void removeEnmSteinFromSide() {
+        for ( SteinTile tile : this.enmFigClick ) {
+            if ( !tile.isSet() ) {
+                tile.setSet();
+                break;
+            }
+        }
+    }
+
+    public void setEnmUsed( int x, int y ) {
+        this.mainFieldClick[x][y].setUsed(true);
+    }
+
+    public void removeTile( int x, int y ) {
+        this.mainFieldClick[x][y].setNormal();
+    }
+
+    public void setEnmStein( int x, int y ){
+        this.removeEnmSteinFromSide();
+
+        this.mainFieldClick[x][y].setSteinTile(true, !this.model.isWhite());
+
+        this.model.setEigZugFinished(false);
+        this.model.setEnmZugFinished(true);
+        if ( !this.model.isWhite() ) {
+            this.setBlacksTurn();
+        }
+        else {
+            this.setWhitsTurn();
+        }
+    }
+
+    public void moveEnmStein( int startX, int startY, int toX, int toY ) {
+
+        this.mainFieldClick[startX][startY].setNormal();
+        this.mainFieldClick[toX][toY].setSteinTile(true, !this.model.isWhite());
+        this.mainFieldClick[toX][toY].setUsed(false);
+
+
+        this.model.setEigZugFinished(false);
+        this.model.setEnmZugFinished(true);
+        if ( !this.model.isWhite() ) {
+            this.setBlacksTurn();
+        }
+        else {
+            this.setWhitsTurn();
+        }
     }
 
 
+    private void reset() {
+        this.model.reset();
+
+        this.figClicked = false;
+        this.toRemove = false;
+
+        this.createView();
+    }
 
 
     /**
@@ -273,7 +431,7 @@ public class ClientController implements Initializable, EventHandler {
                     public void handle(MouseEvent mouseEvent) {
                         Tile currentTile = (Tile)mouseEvent.getSource();
 
-                        if ( enmFound ) {
+                        if ( model.isEnmFound() ) {
                             setFieldClicked( currentTile);
                         }
                     }
@@ -287,7 +445,7 @@ public class ClientController implements Initializable, EventHandler {
                 public void handle(MouseEvent mouseEvent) {
                     SteinTile currentTile = (SteinTile)mouseEvent.getSource();
 
-                    if ( enmFound ) {
+                    if ( model.isEnmFound() ) {
                         setSteinClicked( currentTile );
                     }
                 }
@@ -309,7 +467,7 @@ public class ClientController implements Initializable, EventHandler {
      */
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        model = new ClientModel();
+        model = new ClientModel(this);
 
 
 
@@ -320,11 +478,8 @@ public class ClientController implements Initializable, EventHandler {
         counterThread.start();
 
 
-        figClicked = false;
-        this.enmFound = false;
-        this.placingFinished = false;
-        this.enmZugFinished = false;
-        this.eigZugFinished = false;
+        this.figClicked = false;
+        this.toRemove = false;
 
         this.createView();
     }

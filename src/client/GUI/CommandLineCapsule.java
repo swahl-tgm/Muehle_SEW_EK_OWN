@@ -1,7 +1,10 @@
 package client.GUI;
 
 
+import javafx.application.Platform;
 import javafx.scene.control.Label;
+
+import java.lang.management.PlatformLoggingMXBean;
 
 /**
  * Kapselt die Commandline damit nur zu gewollten Situationen der Value gesetzt werden kann
@@ -36,7 +39,12 @@ public class CommandLineCapsule {
      */
     public void setText( String text, boolean force ) {
         if ( editable || force ) {
-            this.commandLine.setText(text);
+            Platform.runLater(new Runnable() {
+                @Override
+                public void run() {
+                    commandLine.setText(text);
+                }
+            });
         }
     }
 

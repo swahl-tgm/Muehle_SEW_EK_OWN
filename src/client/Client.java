@@ -4,6 +4,7 @@ import client.GUI.ClientController;
 import javafx.application.Platform;
 import msg.MessageProtocol;
 
+import javax.swing.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -40,7 +41,7 @@ public class Client implements Runnable {
      */
     public void setName(String name ) {
         this.name = name;
-        //this.c.setName(name);
+        this.c.setName(name);
     }
 
     /**
@@ -48,11 +49,14 @@ public class Client implements Runnable {
      */
     public void shutdown() {
         if ( listening ) {
-            listening = false;
-            out.println(MessageProtocol.EXIT);
-            //in.close();
-            //out.close();
-
+            try {
+                listening = false;
+                out.println(MessageProtocol.EXIT);
+                out.close();
+                in.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -84,15 +88,10 @@ public class Client implements Runnable {
                 System.out.println("AhA: " + msg);
                 String command = msg.substring(0, ind);
                 System.out.println("Command client: " + command);
+                int x, y;
                 switch (command) {
-                    case MessageProtocol.READY:
-                        break;
                     case MessageProtocol.EXIT:
                         this.shutdown();
-                        break;
-                    case MessageProtocol.HIT:
-                        break;
-                    case MessageProtocol.SHIP:
                         break;
                     case MessageProtocol.ENMSET:
                         this.c.foundEnm();
@@ -101,10 +100,29 @@ public class Client implements Runnable {
                     case MessageProtocol.ENMUNSET:
                         this.c.enmDisconnected();
                         break;
-                    case MessageProtocol.FIRST:
+                    case MessageProtocol.REMOVE:
+                        x = Integer.parseInt(msg.substring(msg.indexOf("x")+2, msg.indexOf(",")));
+                        y = Integer.parseInt(msg.substring(msg.indexOf("y")+2));
+                        this.c.removeTile(x,y);
+                        break;
+                    case MessageProtocol.SETUSED:
+                        x = Integer.parseInt(msg.substring(msg.indexOf("x")+2, msg.indexOf(",")));
+                        y = Integer.parseInt(msg.substring(msg.indexOf("y")+2));
+                        this.c.setEnmUsed(x,y);
+                        break;
+                    case MessageProtocol.PLACED:
+                        x = Integer.parseInt(msg.substring(msg.indexOf("x")+2, msg.indexOf(",")));
+                        y = Integer.parseInt(msg.substring(msg.indexOf("y")+2));
+                        this.c.setEnmStein(x,y);
                         break;
                     case MessageProtocol.NAMES:
                         this.c.setEnmName(msg.substring(msg.indexOf(" ")+1));
+                        break;
+                    case MessageProtocol.SETTOBLACK:
+                        this.c.setToBlack();
+                        break;
+                    case MessageProtocol.SETTOWHITE:
+                        this.c.setToWhite();
                         break;
                     case MessageProtocol.LOSE:
                         this.c.setLose();

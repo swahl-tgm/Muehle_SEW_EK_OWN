@@ -16,6 +16,8 @@ public class Tile extends StackPane
     private int y;
     private boolean isSteinTile;
     private boolean isKante;
+    private boolean isWhite;
+    private boolean isUsed;
 
 
     private Circle border = new Circle(15);
@@ -24,7 +26,29 @@ public class Tile extends StackPane
     private ClientModel callback;
 
     // Setter / Getter
+    public boolean isUsed() {
+        return isUsed;
+    }
 
+    public void setUsed(boolean used) {
+        isUsed = used;
+    }
+
+    public boolean isKante() {
+        return isKante;
+    }
+
+    public void setKante(boolean kante) {
+        isKante = kante;
+    }
+
+    public boolean isWhite() {
+        return isWhite;
+    }
+
+    public void setWhite(boolean white) {
+        isWhite = white;
+    }
 
     public boolean isSteinTile() {
         return isSteinTile;
@@ -68,7 +92,9 @@ public class Tile extends StackPane
         this.x = x;
         this.y = y;
         this.isSteinTile = false;
+        this.isWhite = false;
         this.isKante = false;
+        this.isUsed = false;
 
         border.setStroke(Color.TRANSPARENT);
         border.setFill(Color.TRANSPARENT);
@@ -87,10 +113,11 @@ public class Tile extends StackPane
         getChildren().addAll(border, text, stein);
     }
 
-    public void setSteinTile( boolean isSteinTile, boolean own ) {
+    public void setSteinTile( boolean isSteinTile, boolean white ) {
         this.isSteinTile = isSteinTile;
+        this.isWhite = white;
         if ( isSteinTile ) {
-            if ( own ) {
+            if ( white ) {
                 this.border.setFill(Color.WHITE);
             }
             else {
@@ -109,6 +136,45 @@ public class Tile extends StackPane
     public void unsetReadyToSet() {
         if ( this.isKante && !this.isSteinTile ) {
             border.setFill(Color.TRANSPARENT);
+        }
+    }
+
+    public void setNormal() {
+        this.isWhite = false;
+        this.isUsed = false;
+        this.isSteinTile = false;
+        border.setStroke(Color.TRANSPARENT);
+        border.setFill(Color.TRANSPARENT);
+    }
+
+    public void setUntouched() {
+        if ( isSteinTile ) {
+            if ( isWhite ) {
+                this.border.setFill(Color.WHITE);
+            }
+            else {
+                this.border.setFill(Color.BLACK);
+            }
+            this.border.setStroke(Color.LIGHTGRAY);
+        }
+    }
+
+    public void setMoveable() {
+        if ( isSteinTile ) {
+            if ( this.isWhite ) {
+                this.border.setFill(Color.LIGHTGRAY);
+            }
+            else {
+                this.border.setFill(Color.DARKGRAY);
+            }
+            this.border.setStroke(Color.LIGHTGRAY);
+        }
+    }
+
+    public void setRemovable() {
+        if ( isSteinTile ) {
+            border.setFill(Color.color(1, 0, (18.0)/255, 0.5));
+            this.border.setStroke(Color.LIGHTGRAY);
         }
     }
 
