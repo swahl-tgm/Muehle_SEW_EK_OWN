@@ -146,7 +146,6 @@ public class ClientModel
 
         FileInputStream inputstream = null;
         String userDirectory = new File("").getAbsolutePath();
-        System.out.println(userDirectory);
         try {
             inputstream = new FileInputStream(userDirectory + "\\src\\client\\GUI\\img\\Spielfeld.png");
         } catch (FileNotFoundException e) {
@@ -266,6 +265,7 @@ public class ClientModel
             if ( !usedTmp && worthInvest && count == 3 ) {
                 // clear figs
                 for (Tile tile : toSet) {
+                    this.callback.sendEnm(MessageProtocol.SETUSED + " x:"+tile.getX()+", y:"+tile.getY());
                     tile.setUsed(true);
                 }
                 return true;

@@ -54,11 +54,8 @@ public class ClientController implements Initializable, EventHandler {
     private Tile moveTile;
     private boolean toRemove;
 
-    private StackPane eigTextBase;
-    private Text eigText;
+
     private String name;
-    private StackPane enmTextBase;
-    private Text enmText;
     private String enmName;
 
 
@@ -336,6 +333,20 @@ public class ClientController implements Initializable, EventHandler {
                 }
             }
         }
+        else if ( this.model.isPlacingFinished() ) {
+            if ( this.moveTile != null ) {
+                if ( currentTile.getX() == moveTile.getX() ) {
+                    // vertical
+                }
+                else {
+                    // horizontal
+                }
+                //if ( currentTile.getY() - moveTile < 2 || currentTile.getY() - moveTile > 0)
+            }
+            else {
+                this.setMoveStein(currentTile);
+            }
+        }
     }
 
     private void showRemove() {
@@ -349,9 +360,15 @@ public class ClientController implements Initializable, EventHandler {
     }
 
     private void setMoveStein( Tile currentTile ) {
-        if ( this.model.isEnmZugFinished() ) {
-            this.moveTile = currentTile;
-            this.moveTile.setMoveable();
+        if ( currentTile == this.moveTile ) {
+            this.moveTile = null;
+            currentTile.setUntouched();
+        }
+        else {
+            if ( currentTile.isSteinTile() ) {
+                this.moveTile = currentTile;
+                this.moveTile.setMoveable();
+            }
         }
     }
 
@@ -406,12 +423,22 @@ public class ClientController implements Initializable, EventHandler {
 
 
     private void reset() {
-        this.model.reset();
+        try {
+            this.model.reset();
 
-        this.figClicked = false;
-        this.toRemove = false;
+            this.figClicked = false;
+            this.toRemove = false;
 
-        this.createView();
+            Platform.runLater(new Runnable() {
+                @Override
+                public void run() {
+                    createView();
+                }
+            });
+        }
+        catch ( Exception ex ){
+            ex.printStackTrace();
+        }
     }
 
 
@@ -419,6 +446,9 @@ public class ClientController implements Initializable, EventHandler {
      * Wird aufgerufen wenn die view created wird. Erstellt alle GUI elemente
      */
     private void createView() {
+        mainField.getChildren().removeAll(mainField.getChildren());
+        eigFig.getChildren().removeAll(eigFig.getChildren());
+        enmFig.getChildren().removeAll(enmFig.getChildren());
 
         mainFieldClick = model.createFieldContent(mainField);
         eigFigClick = model.createEigFigContent(eigFig);
