@@ -34,6 +34,9 @@ import java.util.concurrent.Executors;
 
 public class ClientController implements Initializable, EventHandler {
 
+    public static final int HORIZONTAL = 0;
+    public static final int VERTICAL = 1;
+
     private ClientModel model;
 
     @FXML
@@ -310,12 +313,26 @@ public class ClientController implements Initializable, EventHandler {
                 // back to normal
                 this.markedOne = null;
                 this.figClicked = false;
-                if ( this.model.isWhite() ) {
-                    this.setBlacksTurn();
+
+                if ( this.model.isPlacingFinished() ) {
+                    String toAdd = "";
+                    if ( this.model.isWhite() ) {
+                        toAdd = "Schwarz ist am Zug (Gegner)";
+                    }
+                    else {
+                        toAdd = "Weiß ist am Zug (Gegner)";
+                    }
+                    this.commandLineCapsule.setText("Letzter Stein plaziert. Nun kannst du im nächsten Zug deine Steine verschieben! " + toAdd, true);
                 }
                 else {
-                    this.setWhitsTurn();
+                    if ( this.model.isWhite() ) {
+                        this.setBlacksTurn();
+                    }
+                    else {
+                        this.setWhitsTurn();
+                    }
                 }
+
                 this.setMainUnset();
 
 
@@ -325,7 +342,7 @@ public class ClientController implements Initializable, EventHandler {
 
                     this.model.setEigZugFinished(false);
                     this.model.setEnmZugFinished(true);
-                    this.commandLineCapsule.setText("Mühle! Entferne einen freien Stein des gegners!", true);
+                    this.commandLineCapsule.setText("Mühle! Entferne einen freien Stein des Gegners!", true);
                 }
                 else {
                     this.model.setEigZugFinished(true);
@@ -334,18 +351,115 @@ public class ClientController implements Initializable, EventHandler {
             }
         }
         else if ( this.model.isPlacingFinished() ) {
-            if ( this.moveTile != null ) {
+            if ( this.moveTile != null && !currentTile.isSteinTile() ) {
+                System.out.println("Moving tile from: x:" + moveTile.getX() + ", y:" + moveTile.getY() + "; to x:" + currentTile.getX() + ", y:" + currentTile.getY());
                 if ( currentTile.getX() == moveTile.getX() ) {
                     // vertical
+                    int diff = currentTile.getY() - moveTile.getY();
+                    if ( diff < 0 ) {
+                        diff *= -1;
+                    }
+
+                    if ( moveTile.getX() == 0 || moveTile.getX() == 6 ) {
+                        if ( diff == 3 ) {
+                            // correct
+                            System.out.println("Correct");
+                            currentTile.setSteinTile(true, this.model.isWhite());
+                            moveTile.setNormal();
+                            this.fixUsedNeighbors(moveTile, VERTICAL, moveTile.getX());
+                        }
+                    }
+                    else if ( moveTile.getX() == 1 || moveTile.getX() == 5 ) {
+                        if ( diff == 2 ) {
+                            // correct
+                            System.out.println("Correct");
+                            currentTile.setSteinTile(true, this.model.isWhite());
+                        }
+                    }
+                    else if ( moveTile.getX() == 2 || moveTile.getX() == 3 || moveTile.getX() == 4 ) {
+                        if ( diff == 1 ) {
+                            // correct
+                            System.out.println("Correct");
+                            currentTile.setSteinTile(true, this.model.isWhite());
+                        }
+                    }
                 }
                 else {
+                    int diff = currentTile.getX() - moveTile.getX();
+                    if ( diff < 0 ) {
+                        diff *= -1;
+                    }
                     // horizontal
+                    if ( moveTile.getY() == 0 || moveTile.getY() == 6 ) {
+                        if ( diff == 3 ) {
+                            // correct
+                            System.out.println("Correct");
+                            currentTile.setSteinTile(true, this.model.isWhite());
+                        }
+                    }
+                    else if ( moveTile.getY() == 1 || moveTile.getY() == 5 ) {
+                        if ( diff == 2 ) {
+                            // correct
+                            System.out.println("Correct");
+                            currentTile.setSteinTile(true, this.model.isWhite());
+                        }
+                    }
+                    else if ( moveTile.getY() == 2 || moveTile.getY() == 3 || moveTile.getY() == 4 ) {
+                        if ( diff == 1 ) {
+                            // correct
+                            System.out.println("Correct");
+                            currentTile.setSteinTile(true, this.model.isWhite());
+                        }
+                    }
                 }
-                //if ( currentTile.getY() - moveTile < 2 || currentTile.getY() - moveTile > 0)
+
+
+                if ( this.model.checkForMuehle( this.mainFieldClick ) ) {
+                    this.showRemove();
+                    this.toRemove = true;
+
+                    this.model.setEigZugFinished(false);
+                    this.model.setEnmZugFinished(true);
+                    this.commandLineCapsule.setText("Mühle! Entferne einen freien Stein des Gegners!", true);
+                }
+                else {
+                    this.model.setEigZugFinished(true);
+                    this.model.setEnmZugFinished(false);
+                }
             }
             else {
                 this.setMoveStein(currentTile);
             }
+        }
+    }
+
+    private void fixUsedNeighbors( Tile moveTile, int orientation, int rowOrColumn ) {
+        if ( orientation == HORIZONTAL ) {
+            if ( rowOrColumn == 0 || rowOrColumn == 6 ) {
+                for ( int i = 0; i < 7; i++ ) {
+                    if ( this.mainFieldClick[i][rowOrColumn].isSteinTile() && this.mainFieldClick[i][rowOrColumn].isWhite() == this.model.isWhite() && this.mainFieldClick[i][rowOrColumn].isUsed() ) {
+                        if ( i == 0 || i == 6 ) {
+                            int diff;
+                            if ( rowOrColumn == 0 ) {
+                                diff = 3;
+                            }
+                            else {
+                                diff = -3;
+                            }
+                            if (!( this.mainFieldClick[i][rowOrColumn + diff].isSteinTile() && this.mainFieldClick[i][rowOrColumn + diff].isWhite() == this.model.isWhite() &&this.mainFieldClick[i][rowOrColumn + diff].isUsed())) {
+                                this.mainFieldClick[i][rowOrColumn].setUsed(false);
+                            }
+                        }
+                    }
+                }
+            }
+            else if ( rowOrColumn == 1 || rowOrColumn == 5 ) {
+            }
+            else if ( rowOrColumn == 2 || rowOrColumn == 3 || rowOrColumn == 4 ) {
+            }
+        }
+        else {
+            // Vertical
         }
     }
 

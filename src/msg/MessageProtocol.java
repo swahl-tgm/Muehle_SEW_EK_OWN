@@ -4,6 +4,7 @@ public class MessageProtocol {
     public static final String SETTOWHITE = "!SETTOWHITE";
     public static final String SETTOBLACK = "!SETTOBLACK";
     public static final String PLACED = "!PLACED";
+    public static final String PLACEDFINISHED = "!PLACEDFINISHED";
     public static final String SETUSED = "!SETUSED";
     public static final String REMOVE = "!REMOVE";
     public static final String EXIT = "!EXIT";
