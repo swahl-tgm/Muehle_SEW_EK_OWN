@@ -150,6 +150,9 @@ public class Client implements Runnable {
                     case MessageProtocol.LOSE:
                         this.c.setLose();
                         break;
+                    case MessageProtocol.WIN:
+                        this.c.setWin();
+                        break;
                 }
             }
         } catch (IOException e) {

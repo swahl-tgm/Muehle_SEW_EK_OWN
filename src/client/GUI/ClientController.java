@@ -57,6 +57,9 @@ public class ClientController implements Initializable, EventHandler {
     private Tile moveTile;
     private boolean toRemove;
 
+    // win / lose
+    private boolean win;
+    private boolean lose;
 
     private String name;
     private String enmName;
@@ -211,23 +214,24 @@ public class ClientController implements Initializable, EventHandler {
      * Setzt den lose
      */
     public void setLose() {
-        // damit keine züge mehr möglich sind
-        this.model.setEnmFound(false);
-
-        this.commandLineCapsule.setText("Du hast verloren! " + this.enmName + " hat gewonnen! Vielleich nächstes Mal :)", true);
+        if ( !this.lose ) {
+            // damit keine züge mehr möglich sind
+            this.lose = true;
+            this.c.send(MessageProtocol.WIN);
+            this.commandLineCapsule.setText("Du hast verloren! " + this.enmName + " hat gewonnen! Vielleich nächstes Mal :)", true);
+        }
     }
 
     /**
      * Wird aufgerufen wenn die win Bedingung erfüllt wurde
-     * Leitet das auch an den gegner weiter
      */
-    private void setWin() {
-        // damit keine züge mehr möglich sind
-        this.model.setEnmFound(false);
+    public void setWin() {
+        if ( !this.win ) {
+            this.win = true;
+            this.c.send(MessageProtocol.LOSE);
+            this.commandLineCapsule.setText("Du hast gewonnen! " + this.enmName + " hat verloren! Gratulation :)", true);
 
-        this.commandLineCapsule.setText(this.name + " hast gewonnen!!!", true);
-
-        this.c.send(MessageProtocol.LOSE);
+        }
     }
 
     private void setMainUnset() {
@@ -298,7 +302,7 @@ public class ClientController implements Initializable, EventHandler {
             }
         }
         else if ( this.figClicked ) {
-            if ( !currentTile.isSteinTile() && currentTile.isKante() && currentTile.isWhite() == this.model.isWhite() ) {
+            if ( !currentTile.isSteinTile() && currentTile.isKante() ) {
 
                 this.markedOne.setSet();
                 this.markedOne = null;
@@ -352,7 +356,7 @@ public class ClientController implements Initializable, EventHandler {
         }
         else if ( this.model.isPlacingFinished() ) {
             boolean error = true;
-            if ( this.moveTile != null && !currentTile.isSteinTile() ) {
+            if ( this.moveTile != null && !currentTile.isSteinTile()  ) {
                 System.out.println("Moving tile from: x:" + moveTile.getX() + ", y:" + moveTile.getY() + "; to x:" + currentTile.getX() + ", y:" + currentTile.getY());
                 if ( currentTile.getX() == moveTile.getX() ) {
                     // vertical
@@ -678,7 +682,7 @@ public class ClientController implements Initializable, EventHandler {
             currentTile.setUntouched();
         }
         else {
-            if ( currentTile.isSteinTile() ) {
+            if ( currentTile.isSteinTile() && currentTile.isWhite() == this.model.isWhite() ) {
                 this.moveTile = currentTile;
                 this.moveTile.setMoveable();
             }
@@ -731,13 +735,20 @@ public class ClientController implements Initializable, EventHandler {
 
         this.mainFieldClick[x][y].setSteinTile(true, !this.model.isWhite());
 
-        this.model.setEigZugFinished(false);
-        this.model.setEnmZugFinished(true);
-        if ( !this.model.isWhite() ) {
-            this.setBlacksTurn();
+
+        // check if own client can move tiles
+        if ( this.model.checkIfPlayerCanMove( mainFieldClick ) ) {
+            this.model.setEigZugFinished(false);
+            this.model.setEnmZugFinished(true);
+            if ( !this.model.isWhite() ) {
+                this.setBlacksTurn();
+            }
+            else {
+                this.setWhitsTurn();
+            }
         }
         else {
-            this.setWhitsTurn();
+            this.setLose();
         }
     }
 
@@ -747,14 +758,19 @@ public class ClientController implements Initializable, EventHandler {
         this.mainFieldClick[toX][toY].setSteinTile(true, !this.model.isWhite());
         this.mainFieldClick[toX][toY].setUsed(false);
 
-
-        this.model.setEigZugFinished(false);
-        this.model.setEnmZugFinished(true);
-        if ( !this.model.isWhite() ) {
-            this.setBlacksTurn();
+        // check if own client can move tiles
+        if ( this.model.checkIfPlayerCanMove( mainFieldClick ) ) {
+            this.model.setEigZugFinished(false);
+            this.model.setEnmZugFinished(true);
+            if ( !this.model.isWhite() ) {
+                this.setBlacksTurn();
+            }
+            else {
+                this.setWhitsTurn();
+            }
         }
         else {
-            this.setWhitsTurn();
+            this.setLose();
         }
     }
 
@@ -765,6 +781,12 @@ public class ClientController implements Initializable, EventHandler {
 
             this.figClicked = false;
             this.toRemove = false;
+
+            this.markedOne = null;
+            this.moveTile = null;
+
+            this.lose = false;
+            this.win = false;
 
             Platform.runLater(new Runnable() {
                 @Override
@@ -798,7 +820,8 @@ public class ClientController implements Initializable, EventHandler {
                     public void handle(MouseEvent mouseEvent) {
                         Tile currentTile = (Tile)mouseEvent.getSource();
 
-                        if ( model.isEnmFound() ) {
+                        System.out.println("Aha: " + win + ", " + lose);
+                        if ( model.isEnmFound() && !win && !lose ) {
                             setFieldClicked( currentTile);
                         }
                     }
@@ -812,7 +835,7 @@ public class ClientController implements Initializable, EventHandler {
                 public void handle(MouseEvent mouseEvent) {
                     SteinTile currentTile = (SteinTile)mouseEvent.getSource();
 
-                    if ( model.isEnmFound() ) {
+                    if ( model.isEnmFound() && !win && !lose ) {
                         setSteinClicked( currentTile );
                     }
                 }
@@ -847,6 +870,10 @@ public class ClientController implements Initializable, EventHandler {
 
         this.figClicked = false;
         this.toRemove = false;
+
+
+        this.lose = false;
+        this.win = false;
 
         this.createView();
     }

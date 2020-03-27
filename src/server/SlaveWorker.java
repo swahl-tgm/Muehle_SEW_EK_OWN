@@ -135,6 +135,9 @@ public class SlaveWorker implements Runnable {
                         case MessageProtocol.LOSE:
                             this.enm.send(msg);
                             break;
+                        case MessageProtocol.WIN:
+                            this.enm.send(msg);
+                            break;
                     }
                     System.out.println(msg);
                 }

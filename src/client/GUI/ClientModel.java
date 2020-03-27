@@ -203,6 +203,216 @@ public class ClientModel
         return out;
     }
 
+    public boolean checkIfPlayerCanMove( Tile[][] mainField ) {
+        int diff;
+        for ( int x = 0; x < mainField.length; x++ ) {
+            for ( int y = 0; y < mainField[x].length; y++ ) {
+                diff = 0;
+                if ( mainField[x][y].isKante() && mainField[x][y].isWhite() == this.isWhite && mainField[x][y].isSteinTile() ) {
+                    if ( x == 0 || x == 6 ) {
+                        if ( y == 0 || y == 6 ) {
+                            if ( x == 0 ) {
+                                diff = 3;
+                            }
+                            else {
+                                diff = -3;
+                            }
+                            if ( !mainField[x + diff][y].isSteinTile() || (mainField[x + diff][y].isSteinTile() && mainField[x + diff][y].isWhite() == this.isWhite) ) {
+                                return true;
+                            }
+                            if ( !mainField[x][y + diff].isSteinTile() || (mainField[x][y + diff].isSteinTile() && mainField[x][y + diff].isWhite() == this.isWhite) ) {
+                                return true;
+                            }
+                        }
+                        else if ( y == 3 ) {
+                            if ( x == 0 ) {
+                                diff = 1;
+                            }
+                            else {
+                                diff = -1;
+                            }
+                            if ( !mainField[x + diff][y].isSteinTile() || (mainField[x + diff][y].isSteinTile() && mainField[x + diff][y].isWhite() == this.isWhite) ) {
+                                return true;
+                            }
+                            for ( int i = 0; i < 2; i++ ) {
+                                if ( i == 0 ) {
+                                    diff = 3;
+                                }
+                                else {
+                                    diff = -3;
+                                }
+                                if ( !mainField[x][y + diff].isSteinTile() || (mainField[x][y + diff].isSteinTile() && mainField[x][y + diff].isWhite() == this.isWhite) ) {
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+                    else if ( x == 1 || x == 5 ) {
+                        if ( y == 1 || y == 5 ) {
+                            if ( x == 1 ) {
+                                diff = 2;
+                            }
+                            else {
+                                diff = -2;
+                            }
+                            if ( !mainField[x + diff][y].isSteinTile() || (mainField[x + diff][y].isSteinTile() && mainField[x + diff][y].isWhite() == this.isWhite) ) {
+                                return true;
+                            }
+                            if ( y == 1 ) {
+                                diff = 2;
+                            }
+                            else {
+                                diff = -2;
+                            }
+                            if ( !mainField[x][y + diff].isSteinTile() || (mainField[x][y + diff].isSteinTile() && mainField[x][y + diff].isWhite() == this.isWhite) ) {
+                                return true;
+                            }
+                        }
+                        else if ( y == 3 ) {
+                            for ( int i = 0; i < 2; i++ ) {
+                                if ( i == 0 ) {
+                                    diff = 1;
+                                }
+                                else {
+                                    diff = -1;
+                                }
+                                if ( !mainField[x + diff ][y].isSteinTile() || (mainField[x + diff][y].isSteinTile() && mainField[x + diff][y].isWhite() == this.isWhite) ) {
+                                    return true;
+                                }
+                            }
+                            for ( int i = 0; i < 2; i++ ) {
+                                if ( i == 0 ) {
+                                    diff = 2;
+                                }
+                                else {
+                                    diff = -2;
+                                }
+                                if ( !mainField[x][y + diff].isSteinTile() || (mainField[x][y + diff].isSteinTile() && mainField[x][y + diff].isWhite() == this.isWhite) ) {
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+                    else if ( x == 2 || x == 4) {
+                        if ( y == 2 || y == 4 ) {
+                            if ( x == 2 ) {
+                                diff = 1;
+                            }
+                            else {
+                                diff = -1;
+                            }
+                            if ( !mainField[x + diff][y].isSteinTile() || (mainField[x + diff][y].isSteinTile() && mainField[x + diff][y].isWhite() == this.isWhite) ) {
+                                return true;
+                            }
+                            if ( y == 2 ) {
+                                diff = 1;
+                            }
+                            else {
+                                diff = -1;
+                            }
+                            if ( !mainField[x][y + diff].isSteinTile() || (mainField[x][y + diff].isSteinTile() && mainField[x][y + diff].isWhite() == this.isWhite) ) {
+                                return true;
+                            }
+                        }
+                        else if ( y == 3 ) {
+                            for ( int i = 0; i < 2; i++ ) {
+                                if ( i == 0 ) {
+                                    diff = -1;
+                                }
+                                else {
+                                    diff = 1;
+                                }
+                                if ( !mainField[x][y + diff].isSteinTile() || (mainField[x][y + diff].isSteinTile() && mainField[x][y + diff].isWhite() == this.isWhite) ) {
+                                    return true;
+                                }
+                            }
+                            if ( x == 2 ) {
+                                diff = -1;
+                            }
+                            else {
+                                diff = 1;
+                            }
+                            if ( !mainField[x + diff][y].isSteinTile() || (mainField[x + diff][y].isSteinTile() && mainField[x + diff][y].isWhite() == this.isWhite) ) {
+                                return true;
+                            }
+                        }
+                    }
+                    else if ( x == 3 ) {
+                        if ( y == 0 || y == 6 ) {
+                            for ( int i = 0; i < 2; i++ ) {
+                                if ( i == 0 ) {
+                                    diff = 3;
+                                }
+                                else {
+                                    diff = -3;
+                                }
+                                if ( !mainField[x + diff ][y].isSteinTile() || (mainField[x + diff][y].isSteinTile() && mainField[x + diff][y].isWhite() == this.isWhite) ) {
+                                    return true;
+                                }
+                            }
+                            if ( y == 0 ) {
+                                diff = 1;
+                            }
+                            else {
+                                diff = -1;
+                            }
+                            if ( !mainField[x][y + diff].isSteinTile() || (mainField[x][y + diff].isSteinTile() && mainField[x][y + diff].isWhite() == this.isWhite) ) {
+                                return true;
+                            }
+                        }
+                        else if ( y == 1 || y == 5 ) {
+                            for ( int i = 0; i < 2; i++ ) {
+                                if ( i == 0 ) {
+                                    diff = 2;
+                                }
+                                else {
+                                    diff = -2;
+                                }
+                                if ( !mainField[x + diff ][y].isSteinTile() || (mainField[x + diff][y].isSteinTile() && mainField[x + diff][y].isWhite() == this.isWhite) ) {
+                                    return true;
+                                }
+                            }
+                            for ( int i = 0; i < 2; i++ ) {
+                                if ( i == 0 ) {
+                                    diff = 1;
+                                }
+                                else {
+                                    diff = -1;
+                                }
+                                if ( !mainField[x][y + diff].isSteinTile() || (mainField[x][y + diff].isSteinTile() && mainField[x][y + diff].isWhite() == this.isWhite) ) {
+                                    return true;
+                                }
+                            }
+                        }
+                        else if ( y == 2 || y == 4 ) {
+                            for ( int i = 0; i < 2; i++ ) {
+                                if ( i == 0 ) {
+                                    diff = 2;
+                                }
+                                else {
+                                    diff = -2;
+                                }
+                                if ( !mainField[x + diff ][y].isSteinTile() || (mainField[x + diff][y].isSteinTile() && mainField[x + diff][y].isWhite() == this.isWhite) ) {
+                                    return true;
+                                }
+                            }
+                            if ( y == 2 ) {
+                                diff = -1;
+                            }
+                            else {
+                                diff = 1;
+                            }
+                            if ( !mainField[x][y + diff].isSteinTile() || (mainField[x][y + diff].isSteinTile() && mainField[x][y + diff].isWhite() == this.isWhite) ) {
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
     public boolean checkForMuehle( Tile[][] mainField ) {
         boolean lookForWhite = this.isWhite;
         boolean worthInvest = true;

@@ -14,4 +14,5 @@ public class MessageProtocol {
     public static final String ENMSET = "!ENMSET";
     public static final String ENMUNSET = "!ENMUNSET";
     public static final String LOSE = "!LOSE";
+    public static final String WIN = "!WIN";
 }
