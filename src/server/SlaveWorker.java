@@ -114,6 +114,15 @@ public class SlaveWorker implements Runnable {
                         case MessageProtocol.PLACED:
                             this.enm.send(msg);
                             break;
+                        case MessageProtocol.MOVED:
+                            this.enm.send(msg);
+                            break;
+                        case MessageProtocol.SETUNUSED:
+                            this.enm.send(msg);
+                            break;
+                        case MessageProtocol.STARTREMOVE:
+                            this.enm.send(msg);
+                            break;
                         case MessageProtocol.SETTOBLACK:
                             // auf schwarz setzen
                             this.send(MessageProtocol.SETTOBLACK);

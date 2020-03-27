@@ -218,7 +218,7 @@ public class ClientModel
             toSetInd = 0;
             for ( int x = 0; x < mainField[y].length; x++ ) {
                 if ( mainField[x][y].isKante() && mainField[x][y].isSteinTile() ) {
-                    if ( (mainField[x][y].isWhite() != lookForWhite) ) {
+                    if ( !(mainField[x][y].isWhite() == lookForWhite) ) {
                         worthInvest = false;
                         break;
                     }

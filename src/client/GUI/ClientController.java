@@ -298,14 +298,13 @@ public class ClientController implements Initializable, EventHandler {
             }
         }
         else if ( this.figClicked ) {
-            if ( !currentTile.isSteinTile() && currentTile.isKante() ) {
+            if ( !currentTile.isSteinTile() && currentTile.isKante() && currentTile.isWhite() == this.model.isWhite() ) {
 
                 this.markedOne.setSet();
                 this.markedOne = null;
                 this.figClicked = false;
 
                 currentTile.setSteinTile(true, this.model.isWhite());
-                System.out.println("This: x: " + currentTile.getX() + ", y: " + currentTile.getY());
                 this.c.send(MessageProtocol.PLACED + " x:"+ currentTile.getX() + ", y:"+currentTile.getY());
 
                 // add placed stones
@@ -337,6 +336,7 @@ public class ClientController implements Initializable, EventHandler {
 
 
                 if ( this.model.checkForMuehle( this.mainFieldClick ) ) {
+                    this.c.send(MessageProtocol.STARTREMOVE);
                     this.showRemove();
                     this.toRemove = true;
 
@@ -351,6 +351,7 @@ public class ClientController implements Initializable, EventHandler {
             }
         }
         else if ( this.model.isPlacingFinished() ) {
+            boolean error = true;
             if ( this.moveTile != null && !currentTile.isSteinTile() ) {
                 System.out.println("Moving tile from: x:" + moveTile.getX() + ", y:" + moveTile.getY() + "; to x:" + currentTile.getX() + ", y:" + currentTile.getY());
                 if ( currentTile.getX() == moveTile.getX() ) {
@@ -364,24 +365,31 @@ public class ClientController implements Initializable, EventHandler {
                         if ( diff == 3 ) {
                             // correct
                             System.out.println("Correct");
-                            currentTile.setSteinTile(true, this.model.isWhite());
-                            moveTile.setNormal();
-                            this.fixUsedNeighbors(moveTile, VERTICAL, moveTile.getX());
+                            error = false;
                         }
                     }
                     else if ( moveTile.getX() == 1 || moveTile.getX() == 5 ) {
                         if ( diff == 2 ) {
                             // correct
                             System.out.println("Correct");
-                            currentTile.setSteinTile(true, this.model.isWhite());
+                            error = false;
                         }
                     }
                     else if ( moveTile.getX() == 2 || moveTile.getX() == 3 || moveTile.getX() == 4 ) {
                         if ( diff == 1 ) {
                             // correct
                             System.out.println("Correct");
-                            currentTile.setSteinTile(true, this.model.isWhite());
+                            error = false;
                         }
+                    }
+                    if ( !error ) {
+                        currentTile.setSteinTile(true, this.model.isWhite());
+                        if ( moveTile.isUsed() ) {
+                            // check opposite (horizontal)
+                            this.fixUsedNeighbors(moveTile, HORIZONTAL, moveTile.getY());
+                        }
+                        moveTile.setNormal();
+                        this.c.send(MessageProtocol.MOVED + " sx:"+this.moveTile.getX() + ",sy:"+this.moveTile.getY() + ",x:" + currentTile.getX() + ",y:" + currentTile.getY());
                     }
                 }
                 else {
@@ -394,24 +402,35 @@ public class ClientController implements Initializable, EventHandler {
                         if ( diff == 3 ) {
                             // correct
                             System.out.println("Correct");
-                            currentTile.setSteinTile(true, this.model.isWhite());
+                            error = false;
                         }
                     }
                     else if ( moveTile.getY() == 1 || moveTile.getY() == 5 ) {
                         if ( diff == 2 ) {
                             // correct
                             System.out.println("Correct");
-                            currentTile.setSteinTile(true, this.model.isWhite());
+                            error = false;
                         }
                     }
                     else if ( moveTile.getY() == 2 || moveTile.getY() == 3 || moveTile.getY() == 4 ) {
                         if ( diff == 1 ) {
                             // correct
                             System.out.println("Correct");
-                            currentTile.setSteinTile(true, this.model.isWhite());
+                            error = false;
                         }
                     }
+                    if ( !error ) {
+                        currentTile.setSteinTile(true, this.model.isWhite());
+                        if ( moveTile.isUsed() ) {
+                            // check opposite (vertical)
+                            this.fixUsedNeighbors(moveTile, VERTICAL, moveTile.getX());
+                        }
+                        moveTile.setNormal();
+                        this.c.send(MessageProtocol.MOVED + " sx:"+this.moveTile.getX() + ",sy:"+this.moveTile.getY() + ",x:" + currentTile.getX() + ",y:" + currentTile.getY());
+                    }
                 }
+
+
 
 
                 if ( this.model.checkForMuehle( this.mainFieldClick ) ) {
@@ -426,6 +445,7 @@ public class ClientController implements Initializable, EventHandler {
                     this.model.setEigZugFinished(true);
                     this.model.setEnmZugFinished(false);
                 }
+
             }
             else {
                 this.setMoveStein(currentTile);
@@ -434,32 +454,211 @@ public class ClientController implements Initializable, EventHandler {
     }
 
     private void fixUsedNeighbors( Tile moveTile, int orientation, int rowOrColumn ) {
+        int diff = 0;
+        // for better understanding
+        int row = rowOrColumn;
+        int column = rowOrColumn;
         if ( orientation == HORIZONTAL ) {
-            if ( rowOrColumn == 0 || rowOrColumn == 6 ) {
+            // Horizontal -----
+            if ( row == 0 || row == 6 ) {
                 for ( int i = 0; i < 7; i++ ) {
-                    if ( this.mainFieldClick[i][rowOrColumn].isSteinTile() && this.mainFieldClick[i][rowOrColumn].isWhite() == this.model.isWhite() && this.mainFieldClick[i][rowOrColumn].isUsed() ) {
+                    diff = 0;
+                    if ( this.mainFieldClick[i][row].isSteinTile() && this.mainFieldClick[i][row].isWhite() == this.model.isWhite() && this.mainFieldClick[i][row].isUsed() ) {
                         if ( i == 0 || i == 6 ) {
-                            int diff;
-                            if ( rowOrColumn == 0 ) {
+                            if ( row == 0 ) {
                                 diff = 3;
                             }
                             else {
                                 diff = -3;
                             }
-                            if (!( this.mainFieldClick[i][rowOrColumn + diff].isSteinTile() && this.mainFieldClick[i][rowOrColumn + diff].isWhite() == this.model.isWhite() &&this.mainFieldClick[i][rowOrColumn + diff].isUsed())) {
-                                this.mainFieldClick[i][rowOrColumn].setUsed(false);
+                        }
+                        else if ( i == 3 ) {
+                            if ( row == 0 ) {
+                                diff = 1;
+                            }
+                            else {
+                                diff = -1;
+                            }
+                        }
+                        if ( diff != 0 ) {
+                            if (!( this.mainFieldClick[i][row + diff].isSteinTile() && this.mainFieldClick[i][row + diff].isWhite() == this.model.isWhite() &&this.mainFieldClick[i][row + diff].isUsed())) {
+                                this.mainFieldClick[i][row].setUsed(false);
+                                this.c.send(MessageProtocol.SETUNUSED + " x:" + i + ",y:" + row);
                             }
                         }
                     }
                 }
             }
-            else if ( rowOrColumn == 1 || rowOrColumn == 5 ) {
+            else if ( row == 1 || row == 5 ) {
+                for ( int i = 0; i < 7; i++ ) {
+                    diff = 0;
+                    if ( this.mainFieldClick[i][row].isSteinTile() && this.mainFieldClick[i][row].isWhite() == this.model.isWhite() && this.mainFieldClick[i][row].isUsed() ) {
+                        if ( i == 1 || i == 5 ) {
+                            if ( row == 1 ) {
+                                diff = 3;
+                            }
+                            else {
+                                diff = -3;
+                            }
+                            if (!( this.mainFieldClick[i][row + diff].isSteinTile() && this.mainFieldClick[i][row + diff].isWhite() == this.model.isWhite() && this.mainFieldClick[i][row + diff].isUsed())) {
+                                this.mainFieldClick[i][row].setUsed(false);
+                                this.c.send(MessageProtocol.SETUNUSED + " x:" + i + ",y:" + row);
+                            }
+                        }
+                        else if ( i == 3 ) {
+                            if ( !( (this.mainFieldClick[i][row + 1].isSteinTile() && this.mainFieldClick[i][row + 1].isWhite() == this.model.isWhite() && this.mainFieldClick[i][row + 1].isUsed()) && (this.mainFieldClick[i][row - 1].isSteinTile() && this.mainFieldClick[i][row - 1].isWhite() == this.model.isWhite() &&this.mainFieldClick[i][row - 1].isUsed()) ) ) {
+                                this.mainFieldClick[i][row].setUsed(false);
+                                this.c.send(MessageProtocol.SETUNUSED + " x:" + i + ",y:" + row);
+                            }
+                        }
+                    }
+                }
             }
-            else if ( rowOrColumn == 2 || rowOrColumn == 3 || rowOrColumn == 4 ) {
+            else if ( row == 2 || row == 3 || row == 4 ) {
+                for ( int i = 0; i < 7; i++ ) {
+                    diff = 0;
+                    if ( this.mainFieldClick[i][row].isSteinTile() && this.mainFieldClick[i][row].isWhite() == this.model.isWhite() && this.mainFieldClick[i][row].isUsed() ) {
+                        if ( row == 3 ) {
+                            if ( i == 0 || i == 6 ) {
+                                diff = 3;
+                            }
+                            else if ( i == 1 || i == 5) {
+                                diff = 2;
+                            }
+                            else if ( i == 2 || i == 4) {
+                               diff = 1;
+                            }
+                            if ( diff != 0 ) {
+                                if ( !( (this.mainFieldClick[i][row + diff].isSteinTile() && this.mainFieldClick[i][row + diff].isWhite() == this.model.isWhite() && this.mainFieldClick[i][row + diff].isUsed()) && (this.mainFieldClick[i][row - diff].isSteinTile() && this.mainFieldClick[i][row - diff].isWhite() == this.model.isWhite() &&this.mainFieldClick[i][row - diff].isUsed()) ) ) {
+                                    this.mainFieldClick[i][row].setUsed(false);
+                                    this.c.send(MessageProtocol.SETUNUSED + " x:" + i + ",y:" + row);
+                                }
+                            }
+                        }
+                        else if ( row == 2 || row == 4 ) {
+                            if ( i == 2 || i == 4 ) {
+                                diff = 1;
+                                if ( row == 4 ) {
+                                    diff = -1;
+                                }
+                            }
+                            else if ( i == 3 ) {
+                                diff = -1;
+                                if ( row == 4 ) {
+                                    diff = 1;
+                                }
+                            }
+                            if ( diff != 0 ) {
+                                if (!( this.mainFieldClick[i][row + diff].isSteinTile() && this.mainFieldClick[i][row + diff].isWhite() == this.model.isWhite() &&this.mainFieldClick[i][row + diff].isUsed())) {
+                                    this.mainFieldClick[i][row].setUsed(false);
+                                    this.c.send(MessageProtocol.SETUNUSED + " x:" + i + ",y:" + row);
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
         else {
-            // Vertical
+            // Vertical |
+            if ( column == 0 || column == 6 ) {
+                for ( int i = 0; i < 7; i++ ) {
+                    diff = 0;
+                    if ( this.mainFieldClick[column][i].isSteinTile() && this.mainFieldClick[column][i].isWhite() == this.model.isWhite() && this.mainFieldClick[column][i].isUsed() ) {
+                        if ( i == 0 || i == 6 ) {
+                            if ( column == 0 ) {
+                                diff = 3;
+                            }
+                            else {
+                                diff = -3;
+                            }
+                        }
+                        else if ( i == 3 ) {
+                            if ( column == 0 ) {
+                                diff = 1;
+                            }
+                            else {
+                                diff = -1;
+                            }
+                        }
+                        if ( diff != 0 ) {
+                            if (!( this.mainFieldClick[column + diff][i].isSteinTile() && this.mainFieldClick[column + diff][i].isWhite() == this.model.isWhite() &&this.mainFieldClick[column + diff][i].isUsed())) {
+                                this.mainFieldClick[column][i].setUsed(false);
+                                this.c.send(MessageProtocol.SETUNUSED + " x:" + column + ",y:" + i);
+                            }
+                        }
+                    }
+                }
+            }
+            else if ( column == 1 || column == 5 ) {
+                for ( int i = 0; i < 7; i++ ) {
+                    diff = 0;
+                    if ( this.mainFieldClick[column][i].isSteinTile() && this.mainFieldClick[column][i].isWhite() == this.model.isWhite() && this.mainFieldClick[column][i].isUsed() ) {
+                        if ( i == 1 || i == 5 ) {
+                            if ( column == 1 ) {
+                                diff = 3;
+                            }
+                            else {
+                                diff = -3;
+                            }
+                            if (!( this.mainFieldClick[column + diff][i].isSteinTile() && this.mainFieldClick[column + diff][i].isWhite() == this.model.isWhite() &&this.mainFieldClick[column + diff][i].isUsed())) {
+                                this.mainFieldClick[i][row].setUsed(false);
+                                this.c.send(MessageProtocol.SETUNUSED + " x:" + i + ",y:" + row);
+                            }
+                        }
+                        else if ( i == 3 ) {
+                            if ( !( (this.mainFieldClick[column + 1][i].isSteinTile() && this.mainFieldClick[column + 1][i].isWhite() == this.model.isWhite() && this.mainFieldClick[column + 1][i].isUsed()) && (this.mainFieldClick[column - 1][i].isSteinTile() && this.mainFieldClick[column - 1][i].isWhite() == this.model.isWhite() &&this.mainFieldClick[column - 1][i].isUsed()) ) ) {
+                                this.mainFieldClick[column][i].setUsed(false);
+                                this.c.send(MessageProtocol.SETUNUSED + " x:" + column + ",y:" + i);
+                            }
+                        }
+                    }
+                }
+            }
+            else if ( column == 2 || column == 3 || column == 4 ) {
+                for ( int i = 0; i < 7; i++ ) {
+                    diff = 0;
+                    if ( this.mainFieldClick[column][i].isSteinTile() && this.mainFieldClick[column][i].isWhite() == this.model.isWhite() && this.mainFieldClick[column][i].isUsed() ) {
+                        if ( column == 3 ) {
+                            if ( i == 0 || i == 6 ) {
+                                diff = 3;
+                            }
+                            else if ( i == 1 || i == 5) {
+                                diff = 2;
+                            }
+                            else if ( i == 2 || i == 4) {
+                                diff = 1;
+                            }
+                            if ( diff != 0 ) {
+                                if ( !( (this.mainFieldClick[column + diff][i].isSteinTile() && this.mainFieldClick[column + diff][i].isWhite() == this.model.isWhite() && this.mainFieldClick[column + diff][i].isUsed()) && (this.mainFieldClick[column - diff][i].isSteinTile() && this.mainFieldClick[column - diff][i].isWhite() == this.model.isWhite() &&this.mainFieldClick[column - diff][i].isUsed()) ) ) {
+                                    this.mainFieldClick[column][i].setUsed(false);
+                                    this.c.send(MessageProtocol.SETUNUSED + " x:" + column + ",y:" + i);
+                                }
+                            }
+                        }
+                        else if ( column == 2 || column == 4 ) {
+                            if ( i == 2 || i == 4 ) {
+                                diff = 1;
+                                if ( column == 4 ) {
+                                    diff = -1;
+                                }
+                            }
+                            else if ( i == 3 ) {
+                                diff = -1;
+                                if ( column == 4 ) {
+                                    diff = 1;
+                                }
+                            }
+                            if ( diff != 0 ) {
+                                if (!( this.mainFieldClick[column + diff][i].isSteinTile() && this.mainFieldClick[column + diff][i].isWhite() == this.model.isWhite() && this.mainFieldClick[column + diff][i].isUsed())) {
+                                    this.mainFieldClick[column][i].setUsed(false);
+                                    this.c.send(MessageProtocol.SETUNUSED + " x:" + column + ",y:" + i);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -499,8 +698,32 @@ public class ClientController implements Initializable, EventHandler {
         this.mainFieldClick[x][y].setUsed(true);
     }
 
+    public void setEnmUnused( int x, int y ) {
+        this.mainFieldClick[x][y].setUsed(false);
+    }
+
+    public void startRemove() {
+        this.model.setEigZugFinished(true);
+        this.model.setEnmZugFinished(false);
+        if ( this.model.isWhite() ) {
+            this.setBlacksTurn();
+        }
+        else {
+            this.setWhitsTurn();
+        }
+    }
+
     public void removeTile( int x, int y ) {
         this.mainFieldClick[x][y].setNormal();
+
+        this.model.setEigZugFinished(false);
+        this.model.setEnmZugFinished(true);
+        if ( !this.model.isWhite() ) {
+            this.setBlacksTurn();
+        }
+        else {
+            this.setWhitsTurn();
+        }
     }
 
     public void setEnmStein( int x, int y ){

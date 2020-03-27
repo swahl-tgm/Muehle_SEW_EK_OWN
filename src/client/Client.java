@@ -85,7 +85,7 @@ public class Client implements Runnable {
                 if ( ind == -1 ) {
                     ind = msg.length();
                 }
-                System.out.println("AhA: " + msg);
+                System.out.println("msg: " + msg);
                 String command = msg.substring(0, ind);
                 System.out.println("Command client: " + command);
                 int x, y;
@@ -100,6 +100,9 @@ public class Client implements Runnable {
                     case MessageProtocol.ENMUNSET:
                         this.c.enmDisconnected();
                         break;
+                    case MessageProtocol.STARTREMOVE:
+                        this.c.startRemove();
+                        break;
                     case MessageProtocol.REMOVE:
                         x = Integer.parseInt(msg.substring(msg.indexOf("x")+2, msg.indexOf(",")));
                         y = Integer.parseInt(msg.substring(msg.indexOf("y")+2));
@@ -110,10 +113,30 @@ public class Client implements Runnable {
                         y = Integer.parseInt(msg.substring(msg.indexOf("y")+2));
                         this.c.setEnmUsed(x,y);
                         break;
+                    case MessageProtocol.SETUNUSED:
+                        x = Integer.parseInt(msg.substring(msg.indexOf("x")+2, msg.indexOf(",")));
+                        y = Integer.parseInt(msg.substring(msg.indexOf("y")+2));
+                        this.c.setEnmUnused(x,y);
+                        break;
                     case MessageProtocol.PLACED:
                         x = Integer.parseInt(msg.substring(msg.indexOf("x")+2, msg.indexOf(",")));
                         y = Integer.parseInt(msg.substring(msg.indexOf("y")+2));
                         this.c.setEnmStein(x,y);
+                        break;
+                    case MessageProtocol.MOVED:
+                        int startX, startY;
+                        try {
+                            startX = Integer.parseInt(msg.substring(msg.indexOf("sx")+3, msg.indexOf(",")));
+                            msg = msg.substring(msg.indexOf(",")+1);
+                            startY = Integer.parseInt(msg.substring(msg.indexOf("sy")+3, msg.indexOf(",")));
+                            msg = msg.substring(msg.indexOf(",")+1);
+                            x = Integer.parseInt(msg.substring(msg.indexOf("x")+2, msg.indexOf(",")));
+                            y = Integer.parseInt(msg.substring(msg.indexOf("y")+2));
+                            this.c.moveEnmStein(startX, startY, x, y);
+                        }
+                        catch ( Exception ex ) {
+                            ex.printStackTrace();
+                        }
                         break;
                     case MessageProtocol.NAMES:
                         this.c.setEnmName(msg.substring(msg.indexOf(" ")+1));

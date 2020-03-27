@@ -20,6 +20,7 @@ public class ClientStart extends Application {
         stage.setScene(scene);
         stage.setTitle("Sebo's Mühle");
 
+        System.out.println(false == false);
         stage.show();
     }
 
