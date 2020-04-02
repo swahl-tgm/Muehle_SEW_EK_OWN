@@ -33,6 +33,8 @@ public class ClientModel
     private boolean placingFinished;
 
     private int placedStones;
+    private int ownRemovedStones;
+    private boolean jumpingAllow;
 
     // Text
     private Text enmText;
@@ -96,10 +98,25 @@ public class ClientModel
         this.placingFinished = placingFinished;
     }
 
+    public boolean isJumpingAllow() {
+        return jumpingAllow;
+    }
+
+    public void setJumpingAllow(boolean jumpingAllow) {
+        this.jumpingAllow = jumpingAllow;
+    }
+
     public void stonePlaced(){
         this.placedStones++;
         if ( placedStones == 9 ) {
             this.placingFinished = true;
+        }
+    }
+
+    public void ownStoneRemoved() {
+        this.ownRemovedStones++;
+        if ( this.ownRemovedStones == 6 ) {
+            this.jumpingAllow = true;
         }
     }
 
@@ -112,6 +129,8 @@ public class ClientModel
         this.enmZugFinished = false;
         this.eigZugFinished = false;
         this.placedStones = 0;
+        this.ownRemovedStones = 0;
+        this.jumpingAllow = false;
         this.callback = callback;
 
         // Text
@@ -132,6 +151,8 @@ public class ClientModel
         this.enmZugFinished = false;
         this.eigZugFinished = false;
         this.placedStones = 0;
+        this.ownRemovedStones = 0;
+        this.jumpingAllow = false;
 
         enmText = new Text("Gegner's Spielfiguren");
         enmTextBase = new StackPane();
@@ -217,10 +238,16 @@ public class ClientModel
                             else {
                                 diff = -3;
                             }
-                            if ( !mainField[x + diff][y].isSteinTile() || (mainField[x + diff][y].isSteinTile() && mainField[x + diff][y].isWhite() == this.isWhite) ) {
+                            if ( !mainField[x + diff][y].isSteinTile() ) {
                                 return true;
                             }
-                            if ( !mainField[x][y + diff].isSteinTile() || (mainField[x][y + diff].isSteinTile() && mainField[x][y + diff].isWhite() == this.isWhite) ) {
+                            if ( y == 0 ) {
+                                diff = 3;
+                            }
+                            else {
+                                diff = -3;
+                            }
+                            if ( !mainField[x][y + diff].isSteinTile() ) {
                                 return true;
                             }
                         }
@@ -231,7 +258,7 @@ public class ClientModel
                             else {
                                 diff = -1;
                             }
-                            if ( !mainField[x + diff][y].isSteinTile() || (mainField[x + diff][y].isSteinTile() && mainField[x + diff][y].isWhite() == this.isWhite) ) {
+                            if ( !mainField[x + diff][y].isSteinTile() ) {
                                 return true;
                             }
                             for ( int i = 0; i < 2; i++ ) {
@@ -241,7 +268,7 @@ public class ClientModel
                                 else {
                                     diff = -3;
                                 }
-                                if ( !mainField[x][y + diff].isSteinTile() || (mainField[x][y + diff].isSteinTile() && mainField[x][y + diff].isWhite() == this.isWhite) ) {
+                                if ( !mainField[x][y + diff].isSteinTile() ) {
                                     return true;
                                 }
                             }
@@ -255,7 +282,7 @@ public class ClientModel
                             else {
                                 diff = -2;
                             }
-                            if ( !mainField[x + diff][y].isSteinTile() || (mainField[x + diff][y].isSteinTile() && mainField[x + diff][y].isWhite() == this.isWhite) ) {
+                            if ( !mainField[x + diff][y].isSteinTile() ) {
                                 return true;
                             }
                             if ( y == 1 ) {
@@ -264,7 +291,7 @@ public class ClientModel
                             else {
                                 diff = -2;
                             }
-                            if ( !mainField[x][y + diff].isSteinTile() || (mainField[x][y + diff].isSteinTile() && mainField[x][y + diff].isWhite() == this.isWhite) ) {
+                            if ( !mainField[x][y + diff].isSteinTile() ) {
                                 return true;
                             }
                         }
@@ -276,7 +303,7 @@ public class ClientModel
                                 else {
                                     diff = -1;
                                 }
-                                if ( !mainField[x + diff ][y].isSteinTile() || (mainField[x + diff][y].isSteinTile() && mainField[x + diff][y].isWhite() == this.isWhite) ) {
+                                if ( !mainField[x + diff ][y].isSteinTile() ) {
                                     return true;
                                 }
                             }
@@ -287,7 +314,7 @@ public class ClientModel
                                 else {
                                     diff = -2;
                                 }
-                                if ( !mainField[x][y + diff].isSteinTile() || (mainField[x][y + diff].isSteinTile() && mainField[x][y + diff].isWhite() == this.isWhite) ) {
+                                if ( !mainField[x][y + diff].isSteinTile() ) {
                                     return true;
                                 }
                             }
@@ -301,7 +328,7 @@ public class ClientModel
                             else {
                                 diff = -1;
                             }
-                            if ( !mainField[x + diff][y].isSteinTile() || (mainField[x + diff][y].isSteinTile() && mainField[x + diff][y].isWhite() == this.isWhite) ) {
+                            if ( !mainField[x + diff][y].isSteinTile() ) {
                                 return true;
                             }
                             if ( y == 2 ) {
@@ -310,7 +337,7 @@ public class ClientModel
                             else {
                                 diff = -1;
                             }
-                            if ( !mainField[x][y + diff].isSteinTile() || (mainField[x][y + diff].isSteinTile() && mainField[x][y + diff].isWhite() == this.isWhite) ) {
+                            if ( !mainField[x][y + diff].isSteinTile() ) {
                                 return true;
                             }
                         }
@@ -322,7 +349,7 @@ public class ClientModel
                                 else {
                                     diff = 1;
                                 }
-                                if ( !mainField[x][y + diff].isSteinTile() || (mainField[x][y + diff].isSteinTile() && mainField[x][y + diff].isWhite() == this.isWhite) ) {
+                                if ( !mainField[x][y + diff].isSteinTile() ) {
                                     return true;
                                 }
                             }
@@ -332,7 +359,7 @@ public class ClientModel
                             else {
                                 diff = 1;
                             }
-                            if ( !mainField[x + diff][y].isSteinTile() || (mainField[x + diff][y].isSteinTile() && mainField[x + diff][y].isWhite() == this.isWhite) ) {
+                            if ( !mainField[x + diff][y].isSteinTile() ) {
                                 return true;
                             }
                         }
@@ -346,7 +373,7 @@ public class ClientModel
                                 else {
                                     diff = -3;
                                 }
-                                if ( !mainField[x + diff ][y].isSteinTile() || (mainField[x + diff][y].isSteinTile() && mainField[x + diff][y].isWhite() == this.isWhite) ) {
+                                if ( !mainField[x + diff ][y].isSteinTile() ) {
                                     return true;
                                 }
                             }
@@ -356,7 +383,7 @@ public class ClientModel
                             else {
                                 diff = -1;
                             }
-                            if ( !mainField[x][y + diff].isSteinTile() || (mainField[x][y + diff].isSteinTile() && mainField[x][y + diff].isWhite() == this.isWhite) ) {
+                            if ( !mainField[x][y + diff].isSteinTile() ) {
                                 return true;
                             }
                         }
@@ -368,7 +395,7 @@ public class ClientModel
                                 else {
                                     diff = -2;
                                 }
-                                if ( !mainField[x + diff ][y].isSteinTile() || (mainField[x + diff][y].isSteinTile() && mainField[x + diff][y].isWhite() == this.isWhite) ) {
+                                if ( !mainField[x + diff ][y].isSteinTile() ) {
                                     return true;
                                 }
                             }
@@ -379,7 +406,7 @@ public class ClientModel
                                 else {
                                     diff = -1;
                                 }
-                                if ( !mainField[x][y + diff].isSteinTile() || (mainField[x][y + diff].isSteinTile() && mainField[x][y + diff].isWhite() == this.isWhite) ) {
+                                if ( !mainField[x][y + diff].isSteinTile() ) {
                                     return true;
                                 }
                             }
@@ -392,7 +419,7 @@ public class ClientModel
                                 else {
                                     diff = -2;
                                 }
-                                if ( !mainField[x + diff ][y].isSteinTile() || (mainField[x + diff][y].isSteinTile() && mainField[x + diff][y].isWhite() == this.isWhite) ) {
+                                if ( !mainField[x + diff ][y].isSteinTile() ) {
                                     return true;
                                 }
                             }
@@ -402,7 +429,7 @@ public class ClientModel
                             else {
                                 diff = 1;
                             }
-                            if ( !mainField[x][y + diff].isSteinTile() || (mainField[x][y + diff].isSteinTile() && mainField[x][y + diff].isWhite() == this.isWhite) ) {
+                            if ( !mainField[x][y + diff].isSteinTile() ) {
                                 return true;
                             }
                         }
@@ -410,7 +437,7 @@ public class ClientModel
                 }
             }
         }
-        return true;
+        return false;
     }
 
     public boolean checkForMuehle( Tile[][] mainField ) {

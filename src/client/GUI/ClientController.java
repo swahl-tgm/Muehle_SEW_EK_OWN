@@ -735,21 +735,26 @@ public class ClientController implements Initializable, EventHandler {
 
         this.mainFieldClick[x][y].setSteinTile(true, !this.model.isWhite());
 
-
-        // check if own client can move tiles
-        if ( this.model.checkIfPlayerCanMove( mainFieldClick ) ) {
-            this.model.setEigZugFinished(false);
-            this.model.setEnmZugFinished(true);
-            if ( !this.model.isWhite() ) {
-                this.setBlacksTurn();
+        try {
+            // check if own client can move tiles
+            if ( this.model.isPlacingFinished() && !this.model.checkIfPlayerCanMove( mainFieldClick ) ) {
+                this.setLose();
             }
             else {
-                this.setWhitsTurn();
+                this.model.setEigZugFinished(false);
+                this.model.setEnmZugFinished(true);
+                if ( !this.model.isWhite() ) {
+                    this.setBlacksTurn();
+                }
+                else {
+                    this.setWhitsTurn();
+                }
             }
         }
-        else {
-            this.setLose();
+        catch (Exception ex ) {
+            ex.printStackTrace();
         }
+
     }
 
     public void moveEnmStein( int startX, int startY, int toX, int toY ) {
