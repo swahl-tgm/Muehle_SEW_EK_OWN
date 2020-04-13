@@ -254,7 +254,7 @@ public class ClientController implements Initializable, EventHandler {
         if ( this.model.isEnmZugFinished() ) {
             if ( !clickedTile.isSet() ) {
                 if ( clickedTile.isActivated() ) {
-                    clickedTile.deactivate();
+                    clickedTile.deactivate( this.model.isWhite() );
                     this.markedOne = null;
                     this.figClicked = false;
 
@@ -263,7 +263,7 @@ public class ClientController implements Initializable, EventHandler {
                 else {
                     if ( figClicked ) {
                         for (SteinTile steinTile : this.eigFigClick) {
-                            steinTile.deactivate();
+                            steinTile.deactivate( this.model.isWhite() );
                         }
                     }
                     clickedTile.activate();
@@ -278,181 +278,224 @@ public class ClientController implements Initializable, EventHandler {
     }
 
     private void setFieldClicked( Tile currentTile) {
-        if ( this.toRemove ) {
-            if ( currentTile.isSteinTile() && !currentTile.isUsed() && currentTile.isWhite() != this.model.isWhite() ) {
-                currentTile.setNormal();
+        if ( this.model.isEnmZugFinished() ) {
+            if ( this.toRemove ) {
+                if ( currentTile.isSteinTile() && !currentTile.isUsed() && currentTile.isWhite() != this.model.isWhite() ) {
+                    currentTile.setNormal();
 
-                this.c.send(MessageProtocol.REMOVE + " x:"+currentTile.getX() + ",y:" + currentTile.getY());
+                    this.c.send(MessageProtocol.REMOVE + " x:"+currentTile.getX() + ",y:" + currentTile.getY());
 
-                if ( this.model.isWhite() ) {
-                    this.setBlacksTurn();
-                }
-                else {
-                    this.setWhitsTurn();
-                }
-                this.model.setEigZugFinished(true);
-                this.model.setEnmZugFinished(false);
-                toRemove = false;
-                // make normal
-                for ( Tile[] tiles : this.mainFieldClick ) {
-                    for ( Tile tile : tiles ) {
-                        tile.setUntouched();
-                    }
-                }
-            }
-        }
-        else if ( this.figClicked ) {
-            if ( !currentTile.isSteinTile() && currentTile.isKante() ) {
-
-                this.markedOne.setSet();
-                this.markedOne = null;
-                this.figClicked = false;
-
-                currentTile.setSteinTile(true, this.model.isWhite());
-                this.c.send(MessageProtocol.PLACED + " x:"+ currentTile.getX() + ", y:"+currentTile.getY());
-
-                // add placed stones
-                this.model.stonePlaced();
-                // back to normal
-                this.markedOne = null;
-                this.figClicked = false;
-
-                if ( this.model.isPlacingFinished() ) {
-                    String toAdd = "";
-                    if ( this.model.isWhite() ) {
-                        toAdd = "Schwarz ist am Zug (Gegner)";
-                    }
-                    else {
-                        toAdd = "Weiß ist am Zug (Gegner)";
-                    }
-                    this.commandLineCapsule.setText("Letzter Stein plaziert. Nun kannst du im nächsten Zug deine Steine verschieben! " + toAdd, true);
-                }
-                else {
                     if ( this.model.isWhite() ) {
                         this.setBlacksTurn();
                     }
                     else {
                         this.setWhitsTurn();
                     }
-                }
-
-                this.setMainUnset();
-
-
-                if ( this.model.checkForMuehle( this.mainFieldClick ) ) {
-                    this.c.send(MessageProtocol.STARTREMOVE);
-                    this.showRemove();
-                    this.toRemove = true;
-
-                    this.model.setEigZugFinished(false);
-                    this.model.setEnmZugFinished(true);
-                    this.commandLineCapsule.setText("Mühle! Entferne einen freien Stein des Gegners!", true);
-                }
-                else {
                     this.model.setEigZugFinished(true);
                     this.model.setEnmZugFinished(false);
+                    toRemove = false;
+                    // make normal
+                    for ( Tile[] tiles : this.mainFieldClick ) {
+                        for ( Tile tile : tiles ) {
+                            tile.setUntouched();
+                        }
+                    }
                 }
             }
-        }
-        else if ( this.model.isPlacingFinished() ) {
-            boolean error = true;
-            if ( this.moveTile != null && !currentTile.isSteinTile()  ) {
-                System.out.println("Moving tile from: x:" + moveTile.getX() + ", y:" + moveTile.getY() + "; to x:" + currentTile.getX() + ", y:" + currentTile.getY());
-                if ( currentTile.getX() == moveTile.getX() ) {
-                    // vertical
-                    int diff = currentTile.getY() - moveTile.getY();
-                    if ( diff < 0 ) {
-                        diff *= -1;
+            else if ( this.figClicked ) {
+                if ( !currentTile.isSteinTile() && currentTile.isKante() ) {
+
+                    this.markedOne.setSet();
+                    this.markedOne = null;
+                    this.figClicked = false;
+
+                    currentTile.setSteinTile(true, this.model.isWhite());
+                    this.c.send(MessageProtocol.PLACED + " x:"+ currentTile.getX() + ", y:"+currentTile.getY());
+
+                    // add placed stones
+                    this.model.stonePlaced();
+                    // back to normal
+                    this.markedOne = null;
+                    this.figClicked = false;
+
+                    if ( this.model.isPlacingFinished() ) {
+                        String toAdd = "";
+                        if ( this.model.isWhite() ) {
+                            toAdd = "Schwarz ist am Zug (Gegner)";
+                        }
+                        else {
+                            toAdd = "Weiß ist am Zug (Gegner)";
+                        }
+                        this.commandLineCapsule.setText("Letzter Stein plaziert. Nun kannst du im nächsten Zug deine Steine verschieben! " + toAdd, true);
+                    }
+                    else {
+                        if ( this.model.isWhite() ) {
+                            this.setBlacksTurn();
+                        }
+                        else {
+                            this.setWhitsTurn();
+                        }
                     }
 
-                    if ( moveTile.getX() == 0 || moveTile.getX() == 6 ) {
-                        if ( diff == 3 ) {
-                            // correct
-                            System.out.println("Correct");
-                            error = false;
+                    this.setMainUnset();
+
+
+                    if ( this.model.checkForMuehle( this.mainFieldClick ) ) {
+                        if ( this.model.checkForRemovableTiles( this.mainFieldClick ) ) {
+                            this.c.send(MessageProtocol.STARTREMOVE);
+                            this.showRemove();
+                            this.toRemove = true;
+
+                            this.model.setEigZugFinished(false);
+                            this.model.setEnmZugFinished(true);
+                            this.commandLineCapsule.setText("Mühle! Entferne einen freien Stein des Gegners!", true);
+                        }
+                        else {
+                            this.model.setEigZugFinished(true);
+                            this.model.setEnmZugFinished(false);
+                            String temp;
+                            if ( this.model.isWhite() ) {
+                                temp = "Schwarz ist am Zug (Gegner)";
+                            }
+                            else {
+                                temp = "Weiß ist am Zug (Gegner)";
+                            }
+                            this.commandLineCapsule.setText("Mühle! Es sind jedoch alle Steine des Gegners in einer Mühle und können nicht entfernt werden. Dein Zug ist somit beendet. " + temp, true);
                         }
                     }
-                    else if ( moveTile.getX() == 1 || moveTile.getX() == 5 ) {
-                        if ( diff == 2 ) {
-                            // correct
-                            System.out.println("Correct");
-                            error = false;
-                        }
-                    }
-                    else if ( moveTile.getX() == 2 || moveTile.getX() == 3 || moveTile.getX() == 4 ) {
-                        if ( diff == 1 ) {
-                            // correct
-                            System.out.println("Correct");
-                            error = false;
-                        }
-                    }
-                    if ( !error ) {
-                        currentTile.setSteinTile(true, this.model.isWhite());
-                        if ( moveTile.isUsed() ) {
-                            // check opposite (horizontal)
-                            this.fixUsedNeighbors(moveTile, HORIZONTAL, moveTile.getY());
-                        }
-                        moveTile.setNormal();
-                        this.c.send(MessageProtocol.MOVED + " sx:"+this.moveTile.getX() + ",sy:"+this.moveTile.getY() + ",x:" + currentTile.getX() + ",y:" + currentTile.getY());
+                    else {
+                        this.model.setEigZugFinished(true);
+                        this.model.setEnmZugFinished(false);
                     }
                 }
-                else {
-                    int diff = currentTile.getX() - moveTile.getX();
-                    if ( diff < 0 ) {
-                        diff *= -1;
-                    }
-                    // horizontal
-                    if ( moveTile.getY() == 0 || moveTile.getY() == 6 ) {
-                        if ( diff == 3 ) {
-                            // correct
-                            System.out.println("Correct");
-                            error = false;
-                        }
-                    }
-                    else if ( moveTile.getY() == 1 || moveTile.getY() == 5 ) {
-                        if ( diff == 2 ) {
-                            // correct
-                            System.out.println("Correct");
-                            error = false;
-                        }
-                    }
-                    else if ( moveTile.getY() == 2 || moveTile.getY() == 3 || moveTile.getY() == 4 ) {
-                        if ( diff == 1 ) {
-                            // correct
-                            System.out.println("Correct");
-                            error = false;
-                        }
-                    }
-                    if ( !error ) {
-                        currentTile.setSteinTile(true, this.model.isWhite());
-                        if ( moveTile.isUsed() ) {
-                            // check opposite (vertical)
-                            this.fixUsedNeighbors(moveTile, VERTICAL, moveTile.getX());
-                        }
-                        moveTile.setNormal();
-                        this.c.send(MessageProtocol.MOVED + " sx:"+this.moveTile.getX() + ",sy:"+this.moveTile.getY() + ",x:" + currentTile.getX() + ",y:" + currentTile.getY());
-                    }
-                }
-
-
-
-
-                if ( this.model.checkForMuehle( this.mainFieldClick ) ) {
-                    this.showRemove();
-                    this.toRemove = true;
-
-                    this.model.setEigZugFinished(false);
-                    this.model.setEnmZugFinished(true);
-                    this.commandLineCapsule.setText("Mühle! Entferne einen freien Stein des Gegners!", true);
-                }
-                else {
-                    this.model.setEigZugFinished(true);
-                    this.model.setEnmZugFinished(false);
-                }
-
             }
-            else {
-                this.setMoveStein(currentTile);
+            else if ( this.model.isPlacingFinished() ) {
+                boolean error = true;
+                if ( this.moveTile != null && !currentTile.isSteinTile()  ) {
+                    System.out.println("Moving tile from: x:" + moveTile.getX() + ", y:" + moveTile.getY() + "; to x:" + currentTile.getX() + ", y:" + currentTile.getY());
+                    if ( !this.model.isJumpingAllow() ) {
+                        if ( currentTile.getX() == moveTile.getX() ) {
+                            // vertical
+                            int diff = currentTile.getY() - moveTile.getY();
+                            if ( diff < 0 ) {
+                                diff *= -1;
+                            }
+
+                            if ( moveTile.getX() == 0 || moveTile.getX() == 6 ) {
+                                if ( diff == 3 ) {
+                                    // correct
+                                    System.out.println("Correct");
+                                    error = false;
+                                }
+                            }
+                            else if ( moveTile.getX() == 1 || moveTile.getX() == 5 ) {
+                                if ( diff == 2 ) {
+                                    // correct
+                                    System.out.println("Correct");
+                                    error = false;
+                                }
+                            }
+                            else if ( moveTile.getX() == 2 || moveTile.getX() == 3 || moveTile.getX() == 4 ) {
+                                if ( diff == 1 ) {
+                                    // correct
+                                    System.out.println("Correct");
+                                    error = false;
+                                }
+                            }
+                            if ( !error ) {
+                                this.unsetAllGreen();
+                                currentTile.setSteinTile(true, this.model.isWhite());
+                                if ( moveTile.isUsed() ) {
+                                    // check opposite (horizontal)
+                                    this.fixUsedNeighbors(moveTile, HORIZONTAL, moveTile.getY());
+                                }
+                                moveTile.setNormal();
+                                this.c.send(MessageProtocol.MOVED + " sx:"+this.moveTile.getX() + ",sy:"+this.moveTile.getY() + ",x:" + currentTile.getX() + ",y:" + currentTile.getY());
+                            }
+                        }
+                        else {
+                            int diff = currentTile.getX() - moveTile.getX();
+                            if ( diff < 0 ) {
+                                diff *= -1;
+                            }
+                            // horizontal
+                            if ( moveTile.getY() == 0 || moveTile.getY() == 6 ) {
+                                if ( diff == 3 ) {
+                                    // correct
+                                    System.out.println("Correct");
+                                    error = false;
+                                }
+                            }
+                            else if ( moveTile.getY() == 1 || moveTile.getY() == 5 ) {
+                                if ( diff == 2 ) {
+                                    // correct
+                                    System.out.println("Correct");
+                                    error = false;
+                                }
+                            }
+                            else if ( moveTile.getY() == 2 || moveTile.getY() == 3 || moveTile.getY() == 4 ) {
+                                if ( diff == 1 ) {
+                                    // correct
+                                    System.out.println("Correct");
+                                    error = false;
+                                }
+                            }
+                            if ( !error ) {
+                                this.unsetAllGreen();
+                                currentTile.setSteinTile(true, this.model.isWhite());
+                                if ( moveTile.isUsed() ) {
+                                    // check opposite (vertical)
+                                    this.fixUsedNeighbors(moveTile, VERTICAL, moveTile.getX());
+                                }
+                                moveTile.setNormal();
+                                this.c.send(MessageProtocol.MOVED + " sx:"+this.moveTile.getX() + ",sy:"+this.moveTile.getY() + ",x:" + currentTile.getX() + ",y:" + currentTile.getY());
+                            }
+                        }
+                    }
+                    else {
+                        if ( this.mainFieldClick[currentTile.getX()][currentTile.getY()].isKante() && !this.mainFieldClick[currentTile.getX()][currentTile.getY()].isSteinTile() ) {
+                            this.unsetAllGreen();
+                            currentTile.setSteinTile(true, this.model.isWhite());
+                            if ( moveTile.isUsed() ) {
+                                // check opposite (vertical)
+                                this.fixUsedNeighbors(moveTile, VERTICAL, moveTile.getX());
+                            }
+                            moveTile.setNormal();
+                            this.c.send(MessageProtocol.MOVED + " sx:"+this.moveTile.getX() + ",sy:"+this.moveTile.getY() + ",x:" + currentTile.getX() + ",y:" + currentTile.getY());
+                        }
+                    }
+                    if ( this.model.checkForMuehle( this.mainFieldClick ) ) {
+                        if ( this.model.checkForRemovableTiles( this.mainFieldClick ) ) {
+                            this.c.send(MessageProtocol.STARTREMOVE);
+                            this.showRemove();
+                            this.toRemove = true;
+
+                            this.model.setEigZugFinished(false);
+                            this.model.setEnmZugFinished(true);
+                            this.commandLineCapsule.setText("Mühle! Entferne einen freien Stein des Gegners!", true);
+                        }
+                        else {
+                            this.model.setEigZugFinished(true);
+                            this.model.setEnmZugFinished(false);
+                            String temp;
+                            if ( this.model.isWhite() ) {
+                                temp = "Schwarz ist am Zug (Gegner)";
+                            }
+                            else {
+                                temp = "Weiß ist am Zug (Gegner)";
+                            }
+                            this.commandLineCapsule.setText("Mühle! Es sind jedoch alle Steine des Gegners in einer Mühle und können nicht entfernt werden. Dein Zug ist somit beendet. " + temp, true);
+                        }
+                    }
+                    else {
+                        this.model.setEigZugFinished(true);
+                        this.model.setEnmZugFinished(false);
+                    }
+
+                }
+                else {
+                    this.setMoveStein(currentTile);
+                }
             }
         }
     }
@@ -676,15 +719,81 @@ public class ClientController implements Initializable, EventHandler {
         }
     }
 
-    private void setMoveStein( Tile currentTile ) {
-        if ( currentTile == this.moveTile ) {
-            this.moveTile = null;
-            currentTile.setUntouched();
+    private void setAllFreeGreen() {
+        for ( Tile[] tiles : this.mainFieldClick ) {
+            for ( Tile tile : tiles ) {
+                if ( tile.isKante() && !tile.isSteinTile() ) {
+                    tile.setReadyToSet();
+                }
+            }
         }
-        else {
-            if ( currentTile.isSteinTile() && currentTile.isWhite() == this.model.isWhite() ) {
-                this.moveTile = currentTile;
-                this.moveTile.setMoveable();
+    }
+
+    private void unsetAllGreen() {
+        for ( Tile[] tiles : this.mainFieldClick ) {
+            for ( Tile tile : tiles ) {
+                if ( tile.isGreen() ) {
+                    tile.unsetReadyToSet();
+                }
+            }
+        }
+    }
+
+    private void setNearFreeGreen( Tile currentTile ) {
+        for ( int i = currentTile.getX() + 1; i < 7; i++ ) {
+            if ( this.mainFieldClick[i][currentTile.getY()].isKante() ) {
+                if ( !this.mainFieldClick[i][currentTile.getY()].isSteinTile() ) {
+                    this.mainFieldClick[i][currentTile.getY()].setReadyToSet();
+                }
+                break;
+            }
+        }
+        for ( int i = currentTile.getX() -1 ; i >= 0; i-- ) {
+            if ( this.mainFieldClick[i][currentTile.getY()].isKante() ) {
+                if ( !this.mainFieldClick[i][currentTile.getY()].isSteinTile() ) {
+                    this.mainFieldClick[i][currentTile.getY()].setReadyToSet();
+                }
+                break;
+            }
+        }
+
+        for ( int i = currentTile.getY() + 1; i < 7; i++ ) {
+            if ( this.mainFieldClick[currentTile.getX()][i].isKante() ) {
+                if ( !this.mainFieldClick[currentTile.getX()][i].isSteinTile() ) {
+                    this.mainFieldClick[currentTile.getX()][i].setReadyToSet();
+                }
+                break;
+            }
+        }
+        for ( int i = currentTile.getY() - 1; i >= 0; i-- ) {
+            if ( this.mainFieldClick[currentTile.getX()][i].isKante() ) {
+                if ( !this.mainFieldClick[currentTile.getX()][i].isSteinTile() ) {
+                    this.mainFieldClick[currentTile.getX()][i].setReadyToSet();
+                }
+                break;
+            }
+        }
+    }
+
+    private void setMoveStein( Tile currentTile ) {
+        if ( currentTile.isWhite() == this.model.isWhite() ) {
+            // if only 3 stones left
+            if ( this.model.isJumpingAllow() ) {
+                this.setAllFreeGreen();
+            }
+            else {
+                this.setNearFreeGreen( currentTile );
+            }
+            if ( currentTile == this.moveTile ) {
+                this.moveTile = null;
+                currentTile.setUntouched();
+                this.unsetAllGreen();
+            }
+            else {
+                if ( currentTile.isSteinTile() && currentTile.isWhite() == this.model.isWhite() ) {
+                    this.moveTile = currentTile;
+                    this.moveTile.setMoveable();
+                }
             }
         }
     }
@@ -717,8 +826,16 @@ public class ClientController implements Initializable, EventHandler {
         }
     }
 
+
+    /**
+     * Removes a tile that the enemy selected
+     * @param x
+     * @param y
+     */
     public void removeTile( int x, int y ) {
         this.mainFieldClick[x][y].setNormal();
+        this.model.ownStoneRemoved();
+
 
         this.model.setEigZugFinished(false);
         this.model.setEnmZugFinished(true);
@@ -728,6 +845,20 @@ public class ClientController implements Initializable, EventHandler {
         else {
             this.setWhitsTurn();
         }
+
+        // if only 3 left -> message
+        if ( this.model.isJumpingAllow() ) {
+            String temp;
+            if ( this.model.isWhite() ) {
+                temp = "Schwarz ist am Zug (Gegner)";
+            }
+            else {
+                temp = "Weiß ist am Zug (Gegner)";
+            }
+            this.commandLineCapsule.setText("Du hast nur noch 3 Steine! Mit diesen kannst du nun auf jedes freie Feld auf dem Brett hüpfen! " + temp, true);
+        }
+
+
     }
 
     public void setEnmStein( int x, int y ){

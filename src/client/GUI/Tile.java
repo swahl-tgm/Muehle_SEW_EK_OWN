@@ -19,6 +19,8 @@ public class Tile extends StackPane
     private boolean isWhite;
     private boolean isUsed;
 
+    private boolean isGreen;
+
 
     private Circle border = new Circle(15);
     private Text text = new Text();
@@ -28,6 +30,14 @@ public class Tile extends StackPane
     // Setter / Getter
     public boolean isUsed() {
         return isUsed;
+    }
+
+    public boolean isGreen() {
+        return isGreen;
+    }
+
+    public void setGreen(boolean green) {
+        isGreen = green;
     }
 
     public void setUsed(boolean used) {
@@ -95,6 +105,7 @@ public class Tile extends StackPane
         this.isWhite = false;
         this.isKante = false;
         this.isUsed = false;
+        this.isGreen = false;
 
         border.setStroke(Color.TRANSPARENT);
         border.setFill(Color.TRANSPARENT);
@@ -130,12 +141,14 @@ public class Tile extends StackPane
     public void setReadyToSet() {
         if ( this.isKante && !this.isSteinTile) {
             border.setFill(Color.color((18.0/255), 1, 0, 0.5));
+            this.isGreen = true;
         }
     }
 
     public void unsetReadyToSet() {
         if ( this.isKante && !this.isSteinTile ) {
             border.setFill(Color.TRANSPARENT);
+            this.isGreen = false;
         }
     }
 
@@ -145,6 +158,7 @@ public class Tile extends StackPane
         this.isSteinTile = false;
         border.setStroke(Color.TRANSPARENT);
         border.setFill(Color.TRANSPARENT);
+        this.isGreen = false;
     }
 
     public void setUntouched() {
@@ -156,6 +170,7 @@ public class Tile extends StackPane
                 this.border.setFill(Color.BLACK);
             }
             this.border.setStroke(Color.LIGHTGRAY);
+            this.isGreen = false;
         }
     }
 
@@ -168,6 +183,8 @@ public class Tile extends StackPane
                 this.border.setFill(Color.DARKGRAY);
             }
             this.border.setStroke(Color.LIGHTGRAY);
+            this.isGreen = false;
+
         }
     }
 
@@ -175,6 +192,7 @@ public class Tile extends StackPane
         if ( isSteinTile ) {
             border.setFill(Color.color(1, 0, (18.0)/255, 0.5));
             this.border.setStroke(Color.LIGHTGRAY);
+            this.isGreen = false;
         }
     }
 

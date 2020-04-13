@@ -104,6 +104,7 @@ public class SteinTile extends StackPane
     public void setWhite() {
         stein.setFill(Color.WHITE);
     }
+
     public void activate() {
         if ( !this.isSet ) {
             this.isActivated = true;
@@ -111,10 +112,15 @@ public class SteinTile extends StackPane
         }
     }
 
-    public void deactivate() {
+    public void deactivate( boolean isWhite) {
         if (!this.isSet ) {
             this.isActivated = false;
-            this.stein.setFill(Color.WHITE);
+            if ( isWhite ) {
+                this.stein.setFill(Color.WHITE);
+            }
+            else {
+                this.stein.setFill(Color.BLACK);
+            }
         }
     }
 

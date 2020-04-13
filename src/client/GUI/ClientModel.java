@@ -440,36 +440,46 @@ public class ClientModel
         return false;
     }
 
+    public boolean checkForRemovableTiles( Tile[][] mainField ) {
+        for ( Tile[] tiles : mainField ) {
+            for ( Tile tile : tiles ) {
+                if ( tile.isSteinTile() && tile.isWhite() != this.isWhite && !tile.isUsed() ) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     public boolean checkForMuehle( Tile[][] mainField ) {
         boolean lookForWhite = this.isWhite;
-        boolean worthInvest = true;
-        boolean usedTmp = true;
         int count = 0;
+        int usedCount = 0;
         Tile[] toSet = new Tile[3];
         int toSetInd = 0;
 
         for ( int y = 0; y < mainField.length; y++ ) {
-            worthInvest = true;
-            usedTmp = true;
             count = 0;
+            usedCount = 0;
             toSetInd = 0;
             for ( int x = 0; x < mainField[y].length; x++ ) {
                 if ( mainField[x][y].isKante() && mainField[x][y].isSteinTile() ) {
-                    if ( !(mainField[x][y].isWhite() == lookForWhite) ) {
-                        worthInvest = false;
-                        break;
-                    }
-                    else {
+                    if ( mainField[x][y].isWhite() == lookForWhite)  {
                         count++;
                         toSet[toSetInd] = mainField[x][y];
                         toSetInd++;
+
+                        if ( mainField[x][y].isUsed() ) {
+                            usedCount++;
+                        }
                     }
-                    if ( !mainField[x][y].isUsed() ) {
-                        usedTmp = false;
+                    else {
+                        count = 0;
+                        usedCount = 0;
                     }
                 }
             }
-            if ( !usedTmp && worthInvest && count == 3 ) {
+            if ( /*!usedTmp*/ usedCount <= 2 && count == 3 ) {
                 // clear figs
                 for (Tile tile : toSet) {
                     this.callback.sendEnm(MessageProtocol.SETUSED + " x:"+tile.getX()+", y:"+tile.getY());
@@ -479,27 +489,26 @@ public class ClientModel
             }
         }
         for ( int x = 0; x < mainField.length; x++ ) {
-            worthInvest = true;
-            usedTmp = true;
             count = 0;
+            usedCount = 0;
             toSetInd = 0;
             for ( int y = 0; y < mainField[x].length; y++ ) {
                 if ( mainField[x][y].isKante() && mainField[x][y].isSteinTile() ) {
-                    if ( (mainField[x][y].isWhite() != lookForWhite) ) {
-                        worthInvest = false;
-                        break;
-                    }
-                    else {
+                    if ( mainField[x][y].isWhite() == lookForWhite ) {
                         count++;
                         toSet[toSetInd] = mainField[x][y];
                         toSetInd++;
+                        if ( mainField[x][y].isUsed() ) {
+                            usedCount++;
+                        }
                     }
-                    if ( !mainField[x][y].isUsed() ) {
-                        usedTmp = false;
+                    else {
+                        count = 0;
+                        usedCount = 0;
                     }
                 }
             }
-            if ( !usedTmp && worthInvest && count == 3 ) {
+            if ( /* !usedTmp */ usedCount <= 2 && count == 3 ) {
                 // clear figs
                 for (Tile tile : toSet) {
                     this.callback.sendEnm(MessageProtocol.SETUSED + " x:"+tile.getX()+", y:"+tile.getY());
