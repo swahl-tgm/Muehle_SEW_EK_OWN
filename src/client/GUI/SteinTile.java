@@ -6,6 +6,9 @@ import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
 
+/**
+ * Ist die Komponente für die Felder mit den Steinen auf dem Spielfeld
+ */
 public class SteinTile extends StackPane
 {
     private int x;

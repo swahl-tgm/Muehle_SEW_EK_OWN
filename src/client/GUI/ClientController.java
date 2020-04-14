@@ -32,6 +32,9 @@ import java.util.ResourceBundle;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+/**
+ * Controller für den Client
+ */
 public class ClientController implements Initializable, EventHandler {
 
     public static final int HORIZONTAL = 0;
@@ -76,6 +79,10 @@ public class ClientController implements Initializable, EventHandler {
     // Callback
     private Client c;
 
+    /**
+     * Sendet einen String an den gegner
+     * @param msg ist der String
+     */
     public void sendEnm( String msg ) {
         c.send(msg);
     }
@@ -94,6 +101,9 @@ public class ClientController implements Initializable, EventHandler {
     }
 
 
+    /**
+     * Setzt den Spieler auf die Farbe schwarz
+     */
     public void setToBlack() {
         if ( !this.model.isColorSet() ) {
             this.model.setWhite(false);
@@ -112,6 +122,9 @@ public class ClientController implements Initializable, EventHandler {
         }
     }
 
+    /**
+     * Setzt den Spieler auf die Farbe Weiß
+     */
     public void setToWhite() {
         if ( !this.model.isColorSet() ) {
             this.model.setWhite(true);
@@ -169,6 +182,9 @@ public class ClientController implements Initializable, EventHandler {
         this.closeCommandCounter();
     }
 
+    /**
+     * Setzt den Text in der Commandzeile (auf "Weiß ist am Zug..)
+     */
     private void setWhitsTurn() {
         String temp = "(Du)";
         if ( !this.model.isWhite() ) {
@@ -177,6 +193,9 @@ public class ClientController implements Initializable, EventHandler {
         this.commandLineCapsule.setText("Weiß ist am Zug " + temp, true);
     }
 
+    /**
+     * Setzt den Text in der Commandzeile (auf "Schwarz ist am Zug..)
+     */
     private void setBlacksTurn() {
         String temp = "(Du)";
         if ( this.model.isWhite() ) {
@@ -234,6 +253,9 @@ public class ClientController implements Initializable, EventHandler {
         }
     }
 
+    /**
+     * Setzt alle Felder auf normal zurück
+     */
     private void setMainUnset() {
         for ( int i = 0; i < this.mainFieldClick.length; i++ ) {
             for ( int j = 0; j < this.mainFieldClick[i].length; j++ ) {
@@ -242,6 +264,9 @@ public class ClientController implements Initializable, EventHandler {
         }
     }
 
+    /**
+     * Setzt alle Felder die frei sind auf Grün (markiert das plaziert werden kann)
+     */
     private void setMainSet() {
         for ( int i = 0; i < this.mainFieldClick.length; i++ ) {
             for ( int j = 0; j < this.mainFieldClick[i].length; j++ ) {
@@ -250,6 +275,10 @@ public class ClientController implements Initializable, EventHandler {
         }
     }
 
+    /**
+     * Eventlistener für das Klicken auf die eigenen Steine auf der Linken Seite
+     * @param clickedTile ist der geklickte Stein
+     */
     private void setSteinClicked( SteinTile clickedTile ) {
         if ( this.model.isEnmZugFinished() ) {
             if ( !clickedTile.isSet() ) {
@@ -277,6 +306,10 @@ public class ClientController implements Initializable, EventHandler {
 
     }
 
+    /**
+     * Eventlistener für das Klicken auf das Feld
+     * @param currentTile ist das geklickte Feld
+     */
     private void setFieldClicked( Tile currentTile) {
         if ( this.model.isEnmZugFinished() ) {
             if ( this.toRemove ) {
@@ -500,35 +533,49 @@ public class ClientController implements Initializable, EventHandler {
         }
     }
 
+    /**
+     * Wenn ein Spieler einen Stein bewegt, wird diese Methode aufgerufen um, wenn dieser Stein in einer Mühle war, die Nachbarn freizugeben
+     * @param moveTile Stein der bewegt wird
+     * @param orientation Horizontal | Vertical
+     * @param rowOrColumn die Reihe oder Spalte
+     */
     private void fixUsedNeighbors( Tile moveTile, int orientation, int rowOrColumn ) {
         int diff = 0;
+        int diff2 = 0;
         // for better understanding
         int row = rowOrColumn;
         int column = rowOrColumn;
+        int leftX = -1, topY = -1;
+        int tempBreak = -1;
         if ( orientation == HORIZONTAL ) {
-            // Horizontal -----
+            // Horizontal ----- moving vertical --> checking horizontal
             if ( row == 0 || row == 6 ) {
                 for ( int i = 0; i < 7; i++ ) {
                     diff = 0;
+                    diff2 = 0;
                     if ( this.mainFieldClick[i][row].isSteinTile() && this.mainFieldClick[i][row].isWhite() == this.model.isWhite() && this.mainFieldClick[i][row].isUsed() ) {
                         if ( i == 0 || i == 6 ) {
                             if ( row == 0 ) {
                                 diff = 3;
+                                diff2 = 6;
                             }
                             else {
                                 diff = -3;
+                                diff2 = -6;
                             }
                         }
                         else if ( i == 3 ) {
                             if ( row == 0 ) {
                                 diff = 1;
+                                diff2 = 2;
                             }
                             else {
                                 diff = -1;
+                                diff2 = -2;
                             }
                         }
                         if ( diff != 0 ) {
-                            if (!( this.mainFieldClick[i][row + diff].isSteinTile() && this.mainFieldClick[i][row + diff].isWhite() == this.model.isWhite() &&this.mainFieldClick[i][row + diff].isUsed())) {
+                            if (!( this.mainFieldClick[i][row + diff].isSteinTile() && this.mainFieldClick[i][row + diff].isWhite() == this.model.isWhite() && this.mainFieldClick[i][row + diff].isUsed()) && !( this.mainFieldClick[i][row + diff2].isSteinTile() && this.mainFieldClick[i][row + diff2].isWhite() == this.model.isWhite() && this.mainFieldClick[i][row + diff2].isUsed())) {
                                 this.mainFieldClick[i][row].setUsed(false);
                                 this.c.send(MessageProtocol.SETUNUSED + " x:" + i + ",y:" + row);
                             }
@@ -539,15 +586,18 @@ public class ClientController implements Initializable, EventHandler {
             else if ( row == 1 || row == 5 ) {
                 for ( int i = 0; i < 7; i++ ) {
                     diff = 0;
+                    diff2 = 0;
                     if ( this.mainFieldClick[i][row].isSteinTile() && this.mainFieldClick[i][row].isWhite() == this.model.isWhite() && this.mainFieldClick[i][row].isUsed() ) {
                         if ( i == 1 || i == 5 ) {
                             if ( row == 1 ) {
-                                diff = 3;
+                                diff = 2;
+                                diff2 = 4;
                             }
                             else {
-                                diff = -3;
+                                diff = -2;
+                                diff2 = -4;
                             }
-                            if (!( this.mainFieldClick[i][row + diff].isSteinTile() && this.mainFieldClick[i][row + diff].isWhite() == this.model.isWhite() && this.mainFieldClick[i][row + diff].isUsed())) {
+                            if ( !( this.mainFieldClick[i][row + diff].isSteinTile() && this.mainFieldClick[i][row + diff].isWhite() == this.model.isWhite() && this.mainFieldClick[i][row + diff].isUsed()) && !( this.mainFieldClick[i][row + diff2].isSteinTile() && this.mainFieldClick[i][row + diff2].isWhite() == this.model.isWhite() && this.mainFieldClick[i][row + diff2].isUsed()) ) {
                                 this.mainFieldClick[i][row].setUsed(false);
                                 this.c.send(MessageProtocol.SETUNUSED + " x:" + i + ",y:" + row);
                             }
@@ -564,6 +614,7 @@ public class ClientController implements Initializable, EventHandler {
             else if ( row == 2 || row == 3 || row == 4 ) {
                 for ( int i = 0; i < 7; i++ ) {
                     diff = 0;
+                    diff2 = 0;
                     if ( this.mainFieldClick[i][row].isSteinTile() && this.mainFieldClick[i][row].isWhite() == this.model.isWhite() && this.mainFieldClick[i][row].isUsed() ) {
                         if ( row == 3 ) {
                             if ( i == 0 || i == 6 ) {
@@ -582,21 +633,25 @@ public class ClientController implements Initializable, EventHandler {
                                 }
                             }
                         }
-                        else if ( row == 2 || row == 4 ) {
+                        else { // 2 || 4
                             if ( i == 2 || i == 4 ) {
                                 diff = 1;
+                                diff2 = 2;
                                 if ( row == 4 ) {
                                     diff = -1;
+                                    diff2 = -2;
                                 }
                             }
                             else if ( i == 3 ) {
                                 diff = -1;
+                                diff2 = -2;
                                 if ( row == 4 ) {
                                     diff = 1;
+                                    diff2 = 2;
                                 }
                             }
                             if ( diff != 0 ) {
-                                if (!( this.mainFieldClick[i][row + diff].isSteinTile() && this.mainFieldClick[i][row + diff].isWhite() == this.model.isWhite() &&this.mainFieldClick[i][row + diff].isUsed())) {
+                                if ( !( this.mainFieldClick[i][row + diff].isSteinTile() && this.mainFieldClick[i][row + diff].isWhite() == this.model.isWhite() &&this.mainFieldClick[i][row + diff].isUsed()) && !( this.mainFieldClick[i][row + diff2].isSteinTile() && this.mainFieldClick[i][row + diff2].isWhite() == this.model.isWhite() &&this.mainFieldClick[i][row + diff2].isUsed()) ) {
                                     this.mainFieldClick[i][row].setUsed(false);
                                     this.c.send(MessageProtocol.SETUNUSED + " x:" + i + ",y:" + row);
                                 }
@@ -611,25 +666,30 @@ public class ClientController implements Initializable, EventHandler {
             if ( column == 0 || column == 6 ) {
                 for ( int i = 0; i < 7; i++ ) {
                     diff = 0;
+                    diff2 = 0;
                     if ( this.mainFieldClick[column][i].isSteinTile() && this.mainFieldClick[column][i].isWhite() == this.model.isWhite() && this.mainFieldClick[column][i].isUsed() ) {
                         if ( i == 0 || i == 6 ) {
                             if ( column == 0 ) {
                                 diff = 3;
+                                diff2 = 6;
                             }
                             else {
                                 diff = -3;
+                                diff2 = -6;
                             }
                         }
                         else if ( i == 3 ) {
                             if ( column == 0 ) {
                                 diff = 1;
+                                diff2 = 2;
                             }
                             else {
                                 diff = -1;
+                                diff2 = -2;
                             }
                         }
                         if ( diff != 0 ) {
-                            if (!( this.mainFieldClick[column + diff][i].isSteinTile() && this.mainFieldClick[column + diff][i].isWhite() == this.model.isWhite() &&this.mainFieldClick[column + diff][i].isUsed())) {
+                            if ( !( this.mainFieldClick[column + diff][i].isSteinTile() && this.mainFieldClick[column + diff][i].isWhite() == this.model.isWhite() &&this.mainFieldClick[column + diff][i].isUsed()) && !( this.mainFieldClick[column + diff2][i].isSteinTile() && this.mainFieldClick[column + diff2][i].isWhite() == this.model.isWhite() &&this.mainFieldClick[column + diff2][i].isUsed()) ) {
                                 this.mainFieldClick[column][i].setUsed(false);
                                 this.c.send(MessageProtocol.SETUNUSED + " x:" + column + ",y:" + i);
                             }
@@ -640,15 +700,18 @@ public class ClientController implements Initializable, EventHandler {
             else if ( column == 1 || column == 5 ) {
                 for ( int i = 0; i < 7; i++ ) {
                     diff = 0;
+                    diff2 = 0;
                     if ( this.mainFieldClick[column][i].isSteinTile() && this.mainFieldClick[column][i].isWhite() == this.model.isWhite() && this.mainFieldClick[column][i].isUsed() ) {
                         if ( i == 1 || i == 5 ) {
                             if ( column == 1 ) {
-                                diff = 3;
+                                diff = 2;
+                                diff2 = 4;
                             }
                             else {
-                                diff = -3;
+                                diff = -2;
+                                diff2 = -4;
                             }
-                            if (!( this.mainFieldClick[column + diff][i].isSteinTile() && this.mainFieldClick[column + diff][i].isWhite() == this.model.isWhite() &&this.mainFieldClick[column + diff][i].isUsed())) {
+                            if ( !( this.mainFieldClick[column + diff][i].isSteinTile() && this.mainFieldClick[column + diff][i].isWhite() == this.model.isWhite() &&this.mainFieldClick[column + diff][i].isUsed()) && !( this.mainFieldClick[column + diff2][i].isSteinTile() && this.mainFieldClick[column + diff2][i].isWhite() == this.model.isWhite() &&this.mainFieldClick[column + diff2][i].isUsed()) ) {
                                 this.mainFieldClick[i][row].setUsed(false);
                                 this.c.send(MessageProtocol.SETUNUSED + " x:" + i + ",y:" + row);
                             }
@@ -663,41 +726,42 @@ public class ClientController implements Initializable, EventHandler {
                 }
             }
             else if ( column == 2 || column == 3 || column == 4 ) {
-                for ( int i = 0; i < 7; i++ ) {
+                for (int i = 0; i < 7; i++) {
                     diff = 0;
-                    if ( this.mainFieldClick[column][i].isSteinTile() && this.mainFieldClick[column][i].isWhite() == this.model.isWhite() && this.mainFieldClick[column][i].isUsed() ) {
-                        if ( column == 3 ) {
-                            if ( i == 0 || i == 6 ) {
+                    diff2 = 0;
+                    if (this.mainFieldClick[column][i].isSteinTile() && this.mainFieldClick[column][i].isWhite() == this.model.isWhite() && this.mainFieldClick[column][i].isUsed()) {
+                        if (column == 3) {
+                            if (i == 0 || i == 6) {
                                 diff = 3;
-                            }
-                            else if ( i == 1 || i == 5) {
+                            } else if (i == 1 || i == 5) {
                                 diff = 2;
-                            }
-                            else if ( i == 2 || i == 4) {
+                            } else if (i == 2 || i == 4) {
                                 diff = 1;
                             }
-                            if ( diff != 0 ) {
-                                if ( !( (this.mainFieldClick[column + diff][i].isSteinTile() && this.mainFieldClick[column + diff][i].isWhite() == this.model.isWhite() && this.mainFieldClick[column + diff][i].isUsed()) && (this.mainFieldClick[column - diff][i].isSteinTile() && this.mainFieldClick[column - diff][i].isWhite() == this.model.isWhite() &&this.mainFieldClick[column - diff][i].isUsed()) ) ) {
+                            if (diff != 0) {
+                                if (!((this.mainFieldClick[column + diff][i].isSteinTile() && this.mainFieldClick[column + diff][i].isWhite() == this.model.isWhite() && this.mainFieldClick[column + diff][i].isUsed()) && (this.mainFieldClick[column - diff][i].isSteinTile() && this.mainFieldClick[column - diff][i].isWhite() == this.model.isWhite() && this.mainFieldClick[column - diff][i].isUsed()))) {
                                     this.mainFieldClick[column][i].setUsed(false);
                                     this.c.send(MessageProtocol.SETUNUSED + " x:" + column + ",y:" + i);
                                 }
                             }
-                        }
-                        else if ( column == 2 || column == 4 ) {
-                            if ( i == 2 || i == 4 ) {
+                        } else {
+                            if (i == 2 || i == 4) {
                                 diff = 1;
-                                if ( column == 4 ) {
+                                diff2 = 2;
+                                if (column == 4) {
                                     diff = -1;
+                                    diff2 = -2;
                                 }
-                            }
-                            else if ( i == 3 ) {
+                            } else if (i == 3) {
                                 diff = -1;
-                                if ( column == 4 ) {
+                                diff2 = -2;
+                                if (column == 4) {
                                     diff = 1;
+                                    diff2 = 2;
                                 }
                             }
-                            if ( diff != 0 ) {
-                                if (!( this.mainFieldClick[column + diff][i].isSteinTile() && this.mainFieldClick[column + diff][i].isWhite() == this.model.isWhite() && this.mainFieldClick[column + diff][i].isUsed())) {
+                            if (diff != 0) {
+                                if ( !(this.mainFieldClick[column + diff][i].isSteinTile() && this.mainFieldClick[column + diff][i].isWhite() == this.model.isWhite() && this.mainFieldClick[column + diff][i].isUsed()) && !(this.mainFieldClick[column + diff2][i].isSteinTile() && this.mainFieldClick[column + diff2][i].isWhite() == this.model.isWhite() && this.mainFieldClick[column + diff2][i].isUsed()) ) {
                                     this.mainFieldClick[column][i].setUsed(false);
                                     this.c.send(MessageProtocol.SETUNUSED + " x:" + column + ",y:" + i);
                                 }
@@ -709,6 +773,9 @@ public class ClientController implements Initializable, EventHandler {
         }
     }
 
+    /**
+     * Zeigt an, welche Steine des Gegners entfernt werden können
+     */
     private void showRemove() {
         for ( Tile[] tiles : this.mainFieldClick ) {
             for ( Tile tile: tiles ) {
@@ -719,6 +786,9 @@ public class ClientController implements Initializable, EventHandler {
         }
     }
 
+    /**
+     * Markiert die Felder grün, die freu sind (keine Steine sind)
+     */
     private void setAllFreeGreen() {
         for ( Tile[] tiles : this.mainFieldClick ) {
             for ( Tile tile : tiles ) {
@@ -729,6 +799,9 @@ public class ClientController implements Initializable, EventHandler {
         }
     }
 
+    /**
+     * Setzt alle Felder die Grün sind, auf normal zurück
+     */
     private void unsetAllGreen() {
         for ( Tile[] tiles : this.mainFieldClick ) {
             for ( Tile tile : tiles ) {
@@ -739,8 +812,15 @@ public class ClientController implements Initializable, EventHandler {
         }
     }
 
+    /**
+     * Setzt alle Felder die frei sind um ein Feld herum auf grün
+     * @param currentTile das Feld
+     */
     private void setNearFreeGreen( Tile currentTile ) {
         for ( int i = currentTile.getX() + 1; i < 7; i++ ) {
+            if ( ( currentTile.getY() == 3 && i == 3 )) {
+                break;
+            }
             if ( this.mainFieldClick[i][currentTile.getY()].isKante() ) {
                 if ( !this.mainFieldClick[i][currentTile.getY()].isSteinTile() ) {
                     this.mainFieldClick[i][currentTile.getY()].setReadyToSet();
@@ -749,6 +829,9 @@ public class ClientController implements Initializable, EventHandler {
             }
         }
         for ( int i = currentTile.getX() -1 ; i >= 0; i-- ) {
+            if ( ( currentTile.getY() == 3 && i == 3 )) {
+                break;
+            }
             if ( this.mainFieldClick[i][currentTile.getY()].isKante() ) {
                 if ( !this.mainFieldClick[i][currentTile.getY()].isSteinTile() ) {
                     this.mainFieldClick[i][currentTile.getY()].setReadyToSet();
@@ -758,6 +841,9 @@ public class ClientController implements Initializable, EventHandler {
         }
 
         for ( int i = currentTile.getY() + 1; i < 7; i++ ) {
+            if ( currentTile.getX() == 3 && i == 3 ) {
+                break;
+            }
             if ( this.mainFieldClick[currentTile.getX()][i].isKante() ) {
                 if ( !this.mainFieldClick[currentTile.getX()][i].isSteinTile() ) {
                     this.mainFieldClick[currentTile.getX()][i].setReadyToSet();
@@ -766,6 +852,9 @@ public class ClientController implements Initializable, EventHandler {
             }
         }
         for ( int i = currentTile.getY() - 1; i >= 0; i-- ) {
+            if ( currentTile.getX() == 3 && i == 3 ) {
+                break;
+            }
             if ( this.mainFieldClick[currentTile.getX()][i].isKante() ) {
                 if ( !this.mainFieldClick[currentTile.getX()][i].isSteinTile() ) {
                     this.mainFieldClick[currentTile.getX()][i].setReadyToSet();
@@ -775,6 +864,10 @@ public class ClientController implements Initializable, EventHandler {
         }
     }
 
+    /**
+     * Setzt den Stein der bewegt werden soll
+     * @param currentTile
+     */
     private void setMoveStein( Tile currentTile ) {
         if ( currentTile.isWhite() == this.model.isWhite() ) {
             // if only 3 stones left
@@ -798,6 +891,9 @@ public class ClientController implements Initializable, EventHandler {
         }
     }
 
+    /**
+     * Löscht wenn der Gegner einen Stein platziert den Stein aus der Anzeige (rechts)
+     */
     private void removeEnmSteinFromSide() {
         for ( SteinTile tile : this.enmFigClick ) {
             if ( !tile.isSet() ) {
@@ -807,14 +903,27 @@ public class ClientController implements Initializable, EventHandler {
         }
     }
 
+    /**
+     * Setzt einen Stein des Gegners auf Used, somit ist dieser Stein in einer Mühle und kann nicht entfernt werden
+     * @param x x koordinate
+     * @param y y koordinate
+     */
     public void setEnmUsed( int x, int y ) {
         this.mainFieldClick[x][y].setUsed(true);
     }
 
+    /**
+     * Setzt einen Stein des Gegners auf nicht Used, somit ist dieser Stein nicht mehr in einer Mühle und kann entfernt werden
+     * @param x x koordinate
+     * @param y y koordinate
+     */
     public void setEnmUnused( int x, int y ) {
         this.mainFieldClick[x][y].setUsed(false);
     }
 
+    /**
+     * Startet den Remove vorgang
+     */
     public void startRemove() {
         this.model.setEigZugFinished(true);
         this.model.setEnmZugFinished(false);
@@ -828,39 +937,44 @@ public class ClientController implements Initializable, EventHandler {
 
 
     /**
-     * Removes a tile that the enemy selected
+     * Löscht ein Feld, auf wunsch des Gegners
      * @param x
      * @param y
      */
     public void removeTile( int x, int y ) {
         this.mainFieldClick[x][y].setNormal();
-        this.model.ownStoneRemoved();
-
-
-        this.model.setEigZugFinished(false);
-        this.model.setEnmZugFinished(true);
-        if ( !this.model.isWhite() ) {
-            this.setBlacksTurn();
+        if ( this.model.ownStoneRemoved() ) {
+            this.setLose();
         }
         else {
-            this.setWhitsTurn();
-        }
-
-        // if only 3 left -> message
-        if ( this.model.isJumpingAllow() ) {
-            String temp;
-            if ( this.model.isWhite() ) {
-                temp = "Schwarz ist am Zug (Gegner)";
+            this.model.setEigZugFinished(false);
+            this.model.setEnmZugFinished(true);
+            if ( !this.model.isWhite() ) {
+                this.setBlacksTurn();
             }
             else {
-                temp = "Weiß ist am Zug (Gegner)";
+                this.setWhitsTurn();
             }
-            this.commandLineCapsule.setText("Du hast nur noch 3 Steine! Mit diesen kannst du nun auf jedes freie Feld auf dem Brett hüpfen! " + temp, true);
+
+            // if only 3 left -> message
+            if ( this.model.isJumpingAllow() ) {
+                String temp;
+                if ( this.model.isWhite() ) {
+                    temp = "Schwarz ist am Zug (Gegner)";
+                }
+                else {
+                    temp = "Weiß ist am Zug (Gegner)";
+                }
+                this.commandLineCapsule.setText("Du hast nur noch 3 Steine! Mit diesen kannst du nun auf jedes freie Feld auf dem Brett hüpfen! " + temp, true);
+            }
         }
-
-
     }
 
+    /**
+     * Setzt einen Stein (in der eigenen GUI) den der Gegner bei sich gesetzt hat gesetzt hat
+     * @param x
+     * @param y
+     */
     public void setEnmStein( int x, int y ){
         this.removeEnmSteinFromSide();
 
@@ -888,6 +1002,13 @@ public class ClientController implements Initializable, EventHandler {
 
     }
 
+    /**
+     * Bewegt einen Stein den der Gegner ausgewählt hat von dem Startpunkt zum entgültig ausgewählten Feld (in der eigenen GUI)
+     * @param startX
+     * @param startY
+     * @param toX
+     * @param toY
+     */
     public void moveEnmStein( int startX, int startY, int toX, int toY ) {
 
         this.mainFieldClick[startX][startY].setNormal();
@@ -910,7 +1031,9 @@ public class ClientController implements Initializable, EventHandler {
         }
     }
 
-
+    /**
+     * Setzt für den Neustart des Spiels alles zurücl
+     */
     private void reset() {
         try {
             this.model.reset();
@@ -956,7 +1079,6 @@ public class ClientController implements Initializable, EventHandler {
                     public void handle(MouseEvent mouseEvent) {
                         Tile currentTile = (Tile)mouseEvent.getSource();
 
-                        System.out.println("Aha: " + win + ", " + lose);
                         if ( model.isEnmFound() && !win && !lose ) {
                             setFieldClicked( currentTile);
                         }

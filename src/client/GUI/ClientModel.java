@@ -113,11 +113,13 @@ public class ClientModel
         }
     }
 
-    public void ownStoneRemoved() {
+    public boolean ownStoneRemoved() {
         this.ownRemovedStones++;
         if ( this.ownRemovedStones == 6 ) {
             this.jumpingAllow = true;
+            return false;
         }
+        else return this.ownRemovedStones == 7;
     }
 
     public ClientModel( ClientController callback) {
@@ -472,20 +474,25 @@ public class ClientModel
                         if ( mainField[x][y].isUsed() ) {
                             usedCount++;
                         }
+
+                        if ( count == 3 && usedCount <= 2 ) {
+                            // clear figs
+                            for (Tile tile : toSet) {
+                                this.callback.sendEnm(MessageProtocol.SETUSED + " x:"+tile.getX()+", y:"+tile.getY());
+                                tile.setUsed(true);
+                            }
+                            return true;
+                        }
                     }
                     else {
                         count = 0;
                         usedCount = 0;
                     }
                 }
-            }
-            if ( /*!usedTmp*/ usedCount <= 2 && count == 3 ) {
-                // clear figs
-                for (Tile tile : toSet) {
-                    this.callback.sendEnm(MessageProtocol.SETUSED + " x:"+tile.getX()+", y:"+tile.getY());
-                    tile.setUsed(true);
+                else if ( mainField[x][y].isKante() && !mainField[x][y].isSteinTile() ) {
+                    count = 0;
+                    usedCount = 0;
                 }
-                return true;
             }
         }
         for ( int x = 0; x < mainField.length; x++ ) {
@@ -501,20 +508,25 @@ public class ClientModel
                         if ( mainField[x][y].isUsed() ) {
                             usedCount++;
                         }
+
+                        if ( count == 3 && usedCount <= 2 ) {
+                            // clear figs
+                            for (Tile tile : toSet) {
+                                this.callback.sendEnm(MessageProtocol.SETUSED + " x:"+tile.getX()+", y:"+tile.getY());
+                                tile.setUsed(true);
+                            }
+                            return true;
+                        }
                     }
                     else {
                         count = 0;
                         usedCount = 0;
                     }
                 }
-            }
-            if ( /* !usedTmp */ usedCount <= 2 && count == 3 ) {
-                // clear figs
-                for (Tile tile : toSet) {
-                    this.callback.sendEnm(MessageProtocol.SETUSED + " x:"+tile.getX()+", y:"+tile.getY());
-                    tile.setUsed(true);
+                else if ( mainField[x][y].isKante() && !mainField[x][y].isSteinTile() ) {
+                    count = 0;
+                    usedCount = 0;
                 }
-                return true;
             }
         }
 

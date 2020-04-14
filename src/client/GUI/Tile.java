@@ -10,6 +10,9 @@ import javafx.util.Duration;
 
 import javax.imageio.plugins.tiff.TIFFDirectory;
 
+/**
+ * Ist die Komponente für die Felder auf dem Spielfeld
+ */
 public class Tile extends StackPane
 {
     private int x;
