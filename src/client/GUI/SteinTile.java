@@ -100,14 +100,23 @@ public class SteinTile extends StackPane
         getChildren().addAll(border, stein);
     }
 
+    /**
+     * Setzt die Frabe des Steins auf schwarz
+     */
     public void setBlack() {
         stein.setFill(Color.BLACK);
     }
 
+    /**
+     * Setzt die Frabe des Steins auf weiß
+     */
     public void setWhite() {
         stein.setFill(Color.WHITE);
     }
 
+    /**
+     * Setzt den Stein auf "Angeklickt" - aktiviert
+     */
     public void activate() {
         if ( !this.isSet ) {
             this.isActivated = true;
@@ -115,6 +124,9 @@ public class SteinTile extends StackPane
         }
     }
 
+    /**
+     * Setzt den Stein auf "nicht Angeklickt" - deaktiviert
+     */
     public void deactivate( boolean isWhite) {
         if (!this.isSet ) {
             this.isActivated = false;
@@ -127,6 +139,9 @@ public class SteinTile extends StackPane
         }
     }
 
+    /**
+     * Setzt das Feld auf bereits gesetzt - Stein wurde plaziert
+     */
     public void setSet(){
         this.isSet = true;
         this.isActivated = false;

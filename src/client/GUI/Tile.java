@@ -112,6 +112,7 @@ public class Tile extends StackPane
 
         border.setStroke(Color.TRANSPARENT);
         border.setFill(Color.TRANSPARENT);
+        // sets field to "Kante" if it has the right coordinates
         if ( (this.x == 0 || this.x == 3 || this.x == 6) && (this.y == 0 || this.y == 6) ) {
             this.isKante = true;
         }
@@ -127,6 +128,11 @@ public class Tile extends StackPane
         getChildren().addAll(border, text, stein);
     }
 
+    /**
+     * Setzt das Tile auf ein "SteinTile", somit ist auf diesem Feld ein Stein
+     * @param isSteinTile (true | false): ob es ein stein tile ist
+     * @param white (true | false): wenn das Feld weiß werden soll true, sonst false
+     */
     public void setSteinTile( boolean isSteinTile, boolean white ) {
         this.isSteinTile = isSteinTile;
         this.isWhite = white;
@@ -141,6 +147,10 @@ public class Tile extends StackPane
         }
     }
 
+    /**
+     * Setzt das spezielle Feld auf Grün um zu signalisieren das auf diesem Feld ein Stein plaziert werden kann
+     * Wird grün wenn es eine "Kante" ist und kein Stein bereits auf diesem Feld plaziert wurde
+     */
     public void setReadyToSet() {
         if ( this.isKante && !this.isSteinTile) {
             border.setFill(Color.color((18.0/255), 1, 0, 0.5));
@@ -148,6 +158,9 @@ public class Tile extends StackPane
         }
     }
 
+    /**
+     * Setzt das spezielle Feld von Grün auf transparent unter der Bedingung, dass es eine Kante ist und kein Stein darauf plaziert wurde
+     */
     public void unsetReadyToSet() {
         if ( this.isKante && !this.isSteinTile ) {
             border.setFill(Color.TRANSPARENT);
@@ -155,6 +168,9 @@ public class Tile extends StackPane
         }
     }
 
+    /**
+     * Setzt das Feld auf den Ursprungszzustand zurück
+     */
     public void setNormal() {
         this.isWhite = false;
         this.isUsed = false;
@@ -164,6 +180,9 @@ public class Tile extends StackPane
         this.isGreen = false;
     }
 
+    /**
+     * Setzt das Feld auf nicht ausgewählt
+     */
     public void setUntouched() {
         if ( isSteinTile ) {
             if ( isWhite ) {
@@ -177,6 +196,9 @@ public class Tile extends StackPane
         }
     }
 
+    /**
+     * Setzt das Feld auf ausgewählt
+     */
     public void setMoveable() {
         if ( isSteinTile ) {
             if ( this.isWhite ) {
@@ -191,6 +213,9 @@ public class Tile extends StackPane
         }
     }
 
+    /**
+     * Markiert das Feld auf Rot, falls ein Stein drauf ist
+     */
     public void setRemovable() {
         if ( isSteinTile ) {
             border.setFill(Color.color(1, 0, (18.0)/255, 0.5));
@@ -198,8 +223,5 @@ public class Tile extends StackPane
             this.isGreen = false;
         }
     }
-
-
-
 
 }

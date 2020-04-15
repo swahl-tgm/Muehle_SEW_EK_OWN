@@ -542,6 +542,12 @@ public class ClientModel
                     usedCount = 0;
                     toSetInd = 0;
                 }
+                // if in the middle, stop
+                else if ( x == 3 && y == 3) {
+                    count = 0;
+                    usedCount = 0;
+                    toSetInd = 0;
+                }
             }
         }
         for ( int x = 0; x < mainField.length; x++ ) {
@@ -579,6 +585,12 @@ public class ClientModel
                     }
                 }
                 else if ( mainField[x][y].isKante() && !mainField[x][y].isSteinTile() ) {
+                    count = 0;
+                    usedCount = 0;
+                    toSetInd = 0;
+                }
+                // if in the middle, stop
+                else if ( x == 3 && y == 3) {
                     count = 0;
                     usedCount = 0;
                     toSetInd = 0;

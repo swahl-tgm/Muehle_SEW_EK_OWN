@@ -24,6 +24,7 @@ import javafx.stage.Stage;
 import jdk.jfr.BooleanFlag;
 import msg.MessageProtocol;
 
+import javax.imageio.plugins.tiff.TIFFDirectory;
 import javax.swing.*;
 import java.io.IOException;
 import java.net.URL;
@@ -868,12 +869,6 @@ public class ClientController implements Initializable, EventHandler {
     private void setMoveStein( Tile currentTile ) {
         if ( currentTile.isWhite() == this.model.isWhite() ) {
             // if only 3 stones left
-            if ( this.model.isJumpingAllow() ) {
-                this.setAllFreeGreen();
-            }
-            else {
-                this.setNearFreeGreen( currentTile );
-            }
             if ( currentTile == this.moveTile ) {
                 this.moveTile = null;
                 currentTile.setUntouched();
@@ -881,6 +876,19 @@ public class ClientController implements Initializable, EventHandler {
             }
             else {
                 if ( currentTile.isSteinTile() && currentTile.isWhite() == this.model.isWhite() ) {
+                    for ( Tile[] tiles : this.mainFieldClick ) {
+                        for ( Tile tile : tiles ) {
+                            tile.setUntouched();
+                        }
+                    }
+                    this.unsetAllGreen();
+
+                    if ( this.model.isJumpingAllow() ) {
+                        this.setAllFreeGreen();
+                    }
+                    else {
+                        this.setNearFreeGreen( currentTile );
+                    }
                     this.moveTile = currentTile;
                     this.moveTile.setMoveable();
                 }

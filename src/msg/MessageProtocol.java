@@ -1,5 +1,8 @@
 package msg;
 
+/**
+ * Klasse für die Konstanten fürs kommunizieren zwischen Server und Client
+ */
 public class MessageProtocol {
     public static final String SETTOWHITE = "!SETTOWHITE";
     public static final String SETTOBLACK = "!SETTOBLACK";
