@@ -417,25 +417,23 @@ public class ClientController implements Initializable, EventHandler {
                             if ( moveTile.getX() == 0 || moveTile.getX() == 6 ) {
                                 if ( diff == 3 ) {
                                     // correct
-                                    System.out.println("Correct");
                                     error = false;
                                 }
                             }
                             else if ( moveTile.getX() == 1 || moveTile.getX() == 5 ) {
                                 if ( diff == 2 ) {
                                     // correct
-                                    System.out.println("Correct");
                                     error = false;
                                 }
                             }
                             else if ( moveTile.getX() == 2 || moveTile.getX() == 3 || moveTile.getX() == 4 ) {
                                 if ( diff == 1 ) {
                                     // correct
-                                    System.out.println("Correct");
                                     error = false;
                                 }
                             }
                             if ( !error ) {
+                                System.out.println("Moved correctly!");
                                 this.unsetAllGreen();
                                 currentTile.setSteinTile(true, this.model.isWhite());
                                 if ( moveTile.isUsed() ) {
@@ -455,25 +453,23 @@ public class ClientController implements Initializable, EventHandler {
                             if ( moveTile.getY() == 0 || moveTile.getY() == 6 ) {
                                 if ( diff == 3 ) {
                                     // correct
-                                    System.out.println("Correct");
                                     error = false;
                                 }
                             }
                             else if ( moveTile.getY() == 1 || moveTile.getY() == 5 ) {
                                 if ( diff == 2 ) {
                                     // correct
-                                    System.out.println("Correct");
                                     error = false;
                                 }
                             }
                             else if ( moveTile.getY() == 2 || moveTile.getY() == 3 || moveTile.getY() == 4 ) {
                                 if ( diff == 1 ) {
                                     // correct
-                                    System.out.println("Correct");
                                     error = false;
                                 }
                             }
                             if ( !error ) {
+                                System.out.println("Moved correctly!");
                                 this.unsetAllGreen();
                                 currentTile.setSteinTile(true, this.model.isWhite());
                                 if ( moveTile.isUsed() ) {
@@ -487,6 +483,7 @@ public class ClientController implements Initializable, EventHandler {
                     }
                     else {
                         if ( this.mainFieldClick[currentTile.getX()][currentTile.getY()].isKante() && !this.mainFieldClick[currentTile.getX()][currentTile.getY()].isSteinTile() ) {
+                            System.out.println("Moved correctly!");
                             this.unsetAllGreen();
                             currentTile.setSteinTile(true, this.model.isWhite());
                             if ( moveTile.isUsed() ) {
@@ -866,7 +863,7 @@ public class ClientController implements Initializable, EventHandler {
 
     /**
      * Setzt den Stein der bewegt werden soll
-     * @param currentTile
+     * @param currentTile ist der Stein der angeklickt wurde und welcher später zum bewegen benutzt wird
      */
     private void setMoveStein( Tile currentTile ) {
         if ( currentTile.isWhite() == this.model.isWhite() ) {
@@ -905,8 +902,8 @@ public class ClientController implements Initializable, EventHandler {
 
     /**
      * Setzt einen Stein des Gegners auf Used, somit ist dieser Stein in einer Mühle und kann nicht entfernt werden
-     * @param x x koordinate
-     * @param y y koordinate
+     * @param x X Koordinate
+     * @param y Y Koordinate
      */
     public void setEnmUsed( int x, int y ) {
         this.mainFieldClick[x][y].setUsed(true);
@@ -914,8 +911,8 @@ public class ClientController implements Initializable, EventHandler {
 
     /**
      * Setzt einen Stein des Gegners auf nicht Used, somit ist dieser Stein nicht mehr in einer Mühle und kann entfernt werden
-     * @param x x koordinate
-     * @param y y koordinate
+     * @param x X Koordinate
+     * @param y > Koordinate
      */
     public void setEnmUnused( int x, int y ) {
         this.mainFieldClick[x][y].setUsed(false);
@@ -938,8 +935,8 @@ public class ClientController implements Initializable, EventHandler {
 
     /**
      * Löscht ein Feld, auf wunsch des Gegners
-     * @param x
-     * @param y
+     * @param x X Koordinate
+     * @param y Y Koordinate
      */
     public void removeTile( int x, int y ) {
         this.mainFieldClick[x][y].setNormal();
@@ -972,8 +969,8 @@ public class ClientController implements Initializable, EventHandler {
 
     /**
      * Setzt einen Stein (in der eigenen GUI) den der Gegner bei sich gesetzt hat gesetzt hat
-     * @param x
-     * @param y
+     * @param x X Koordinate
+     * @param y Y Koordinate
      */
     public void setEnmStein( int x, int y ){
         this.removeEnmSteinFromSide();
@@ -1004,10 +1001,10 @@ public class ClientController implements Initializable, EventHandler {
 
     /**
      * Bewegt einen Stein den der Gegner ausgewählt hat von dem Startpunkt zum entgültig ausgewählten Feld (in der eigenen GUI)
-     * @param startX
-     * @param startY
-     * @param toX
-     * @param toY
+     * @param startX Startwert X
+     * @param startY Startwert Y
+     * @param toX Endwert X
+     * @param toY Endwert Y
      */
     public void moveEnmStein( int startX, int startY, int toX, int toY ) {
 

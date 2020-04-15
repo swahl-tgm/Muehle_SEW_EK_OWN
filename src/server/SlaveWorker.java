@@ -46,7 +46,6 @@ public class SlaveWorker implements Runnable {
             out.println(MessageProtocol.ENMSET);
         }
         else {
-            System.out.println("Sende ENMUNSET");
             out.println(MessageProtocol.ENMUNSET);
         }
     }
@@ -100,7 +99,7 @@ public class SlaveWorker implements Runnable {
                         ind = msg.length();
                     }
                     String command = msg.substring(0, ind);
-                    System.out.println("Command: " + command);
+                    System.out.println("Command in slave: " + command + ", whole message: " + msg);
                     switch (command) {
                         case MessageProtocol.EXIT:
                             this.shutdown();
@@ -139,7 +138,6 @@ public class SlaveWorker implements Runnable {
                             this.enm.send(msg);
                             break;
                     }
-                    System.out.println(msg);
                 }
             }
         } catch (IOException e) {

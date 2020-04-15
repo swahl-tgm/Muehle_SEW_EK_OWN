@@ -39,7 +39,7 @@ public class Server {
         userMatchedList.remove(worker.getName());
 
         // set enm to nothing
-        System.out.println("Worker: " + worker.getName() + "; Anderer: " + enm.getName());
+        System.out.println("Worker to remove: " + worker.getName() + "; Partner: " + enm.getName());
         enm.setEnm(null);
         userMatchedList.remove(enm.getName());
         userMatchedList.put(enm.getName(), false);

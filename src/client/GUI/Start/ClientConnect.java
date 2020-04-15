@@ -68,7 +68,7 @@ public class ClientConnect implements Initializable {
                 if ( host.length() == 0 ) {
                     host = "localhost";
                 }
-                System.out.println(port + ", "+ host);
+                System.out.println("Connecting to: " + host + ":" + port);
                 Client c = new Client(host, Integer.parseInt(port), controller);
                 c.setName(name.getText());
                 // run client

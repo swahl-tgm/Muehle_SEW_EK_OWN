@@ -85,9 +85,8 @@ public class Client implements Runnable {
                 if ( ind == -1 ) {
                     ind = msg.length();
                 }
-                System.out.println("msg: " + msg);
                 String command = msg.substring(0, ind);
-                System.out.println("Command client: " + command);
+                System.out.println("Command in client: " + command + ", whole message: " + msg);
                 int x, y;
                 switch (command) {
                     case MessageProtocol.EXIT:

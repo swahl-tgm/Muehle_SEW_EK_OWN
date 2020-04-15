@@ -42,6 +42,8 @@ public class ClientModel
     private Text eigText;
     private StackPane eigTextBase;
 
+    // Setter / Getter
+
     public void setEnmText ( String text ) {
         this.enmText.setText( text + "'s Spielfiguren" );
     }
@@ -144,6 +146,9 @@ public class ClientModel
         eigTextBase.getChildren().add(eigText);
     }
 
+    /**
+     * Setzt das Model auf die Startwerte zurück
+     */
     public void reset() {
         // Value
         this.enmFound = false;
@@ -164,6 +169,11 @@ public class ClientModel
         eigTextBase.getChildren().add(eigText);
     }
 
+    /**
+     * Erstellt das Spielfeld, füllt es mit einzlenen Elementen {@link Tile}s
+     * @param mainField ist das Element der GUI in welches die Tiles gesetzt werden
+     * @return ein zweidimensionales Tile[][] Array welches ein Koordinatensystem darstellt mit [x][y] - in dieser Reihenfolge
+     */
     public Tile[][] createFieldContent( GridPane mainField ) {
         Tile[][] out = new Tile[7][7];
 
@@ -194,14 +204,30 @@ public class ClientModel
         return out;
     }
 
+    /**
+     * Ruft die {@link #createFigContent(GridPane, boolean)} auf mit dem parameter own auf true, da es das eigene Feld erstellt
+     * @param eigFig ist das Element der GUI in die die einzlenen Steine gesetzt werden
+     * @return ein Array[] mit den jeweiligen Steinen (SteinTile[])
+     */
     public SteinTile[] createEigFigContent( GridPane eigFig ) {
         return createFigContent(eigFig, true);
     }
 
+    /**
+     * Ruft die {@link #createFigContent(GridPane, boolean)} auf mit dem parameter own auf false, da es das gegnerische Feld erstellt
+     * @param enmFig ist das Element der GUI in die die einzlenen Steine gesetzt werden
+     * @return ein Array[] mit den jeweiligen Steinen (SteinTile[])
+     */
     public SteinTile[] createEnmFigContent( GridPane enmFig ) {
         return createFigContent(enmFig, false);
     }
 
+    /**
+     * Erstellt Teile der GUI, die seitlichen Felder in denen die Steine am Anfang sind
+     * @param fig ist das Element der GUI in die die einzlenen Steine gesetzt werden
+     * @param own ( true | false ): bei true wird ein anderer Text hinzugefügt als bei false. Hierbei geht es darum für welche Seite - eigene oder die des Gegners - die Steine erstellt werden
+     * @return ein Array[] mit den jeweiligen Steinen (SteinTile[])
+     */
     public SteinTile[] createFigContent( GridPane fig, boolean own ) {
         SteinTile[] out = new SteinTile[9];
 
@@ -226,6 +252,12 @@ public class ClientModel
         return out;
     }
 
+    /**
+     * Kontrolliert ob man sich überhaupt noch bewegen kann, heißt es wird geschaut, ob sich irgendein Stein bewegen lässt.
+     * Wenn sich keiner bewegen lässt, hat man sozusagen verloren
+     * @param mainField das Feld welches gecheckt wird
+     * @return ( ture | false ) : abhängig ob man sich bewegen kann
+     */
     public boolean checkIfPlayerCanMove( Tile[][] mainField ) {
         int diff;
         for ( int x = 0; x < mainField.length; x++ ) {
@@ -442,6 +474,11 @@ public class ClientModel
         return false;
     }
 
+    /**
+     * Checkt ob es überhaupt Steine gibt die entfernt werden können (Beipsielsweise: nur Steine in einer Mühle -> man kann nichts entfernen)
+     * @param mainField das Feld welches gecheckt wird
+     * @return ( ture | false ) : abhängig ob freie Steine vorhanden sind oder nicht
+     */
     public boolean checkForRemovableTiles( Tile[][] mainField ) {
         for ( Tile[] tiles : mainField ) {
             for ( Tile tile : tiles ) {
@@ -453,6 +490,11 @@ public class ClientModel
         return false;
     }
 
+    /**
+     * Checkt ob man selbst eine Mühle auf dem Spielfeld hat
+     * @param mainField ist das Feld welches durchsucht wird
+     * @return ( ture | false ) : abhängig ob eine Mühle vorhanden ist oder nicht
+     */
     public boolean checkForMuehle( Tile[][] mainField ) {
         boolean lookForWhite = this.isWhite;
         int count = 0;
@@ -483,15 +525,22 @@ public class ClientModel
                             }
                             return true;
                         }
+                        else if (count == 3) {
+                            count = 0;
+                            usedCount = 0;
+                            toSetInd = 0;
+                        }
                     }
                     else {
                         count = 0;
                         usedCount = 0;
+                        toSetInd = 0;
                     }
                 }
                 else if ( mainField[x][y].isKante() && !mainField[x][y].isSteinTile() ) {
                     count = 0;
                     usedCount = 0;
+                    toSetInd = 0;
                 }
             }
         }
@@ -517,15 +566,22 @@ public class ClientModel
                             }
                             return true;
                         }
+                        else if (count == 3) {
+                            count = 0;
+                            usedCount = 0;
+                            toSetInd = 0;
+                        }
                     }
                     else {
                         count = 0;
                         usedCount = 0;
+                        toSetInd = 0;
                     }
                 }
                 else if ( mainField[x][y].isKante() && !mainField[x][y].isSteinTile() ) {
                     count = 0;
                     usedCount = 0;
+                    toSetInd = 0;
                 }
             }
         }
